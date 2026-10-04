@@ -1,0 +1,16 @@
+# ninja log v7
+2	875	1790328288230655448	CMakeFiles/RenderProject.dir/libs/sdw/CanvasTriangle.cpp.o	dfaec8d0395e82aa
+2	927	1790328288230870030	CMakeFiles/RenderProject.dir/libs/sdw/Colour.cpp.o	481899d8a1e49412
+1	929	1790328288230292491	CMakeFiles/RenderProject.dir/libs/sdw/CanvasPoint.cpp.o	806dbaa3389985c4
+2	1033	1790328288231398778	CMakeFiles/RenderProject.dir/libs/sdw/ModelTriangle.cpp.o	9f9a20ca3db63224
+3	1068	1790328288231809026	CMakeFiles/RenderProject.dir/libs/sdw/RayTriangleIntersection.cpp.o	9203832a714f9a08
+2	1698	1790328288231052154	CMakeFiles/RenderProject.dir/libs/sdw/DrawingWindow.cpp.o	b4ff265570347268
+927	1776	1790328289156056323	CMakeFiles/RenderProject.dir/libs/sdw/TexturePoint.cpp.o	68cff8e2d9b69567
+929	2096	1790328289157893023	CMakeFiles/RenderProject.dir/libs/sdw/Utils.cpp.o	aa2bbc33c87e2268
+879	2288	1790328289107815233	CMakeFiles/RenderProject.dir/libs/sdw/TextureMap.cpp.o	e125c8da809d2d70
+1034	2397	1790328289262835251	CMakeFiles/RenderProject.dir/src/ColourSpectrumRenderer.cpp.o	50e818c19c2bf2da
+1068	2645	1790328289297294523	CMakeFiles/RenderProject.dir/src/MainApplication.cpp.o	3904a67800a44b18
+1699	2875	1790328289928030590	CMakeFiles/RenderProject.dir/src/RedNoiseRenderer.cpp.o	88a826de24185d10
+1776	2913	1790328290005312017	CMakeFiles/RenderProject.dir/src/Renderer.cpp.o	5d16f98e1832fb93
+2	93	1791109838411209415	build.ninja	a51aa1284bc032a3
+26	86	1790328857798330031	RenderProject	5c80bab9867c70f9
