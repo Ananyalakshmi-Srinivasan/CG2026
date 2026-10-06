@@ -2,7 +2,10 @@
 #include "RedNoiseRenderer.h"
 #include "ColourSpectrumRenderer.h"
 #include <fstream>
+#include <iostream>
 #include <vector>
+#include <glm/glm.hpp>
+#include <glm/gtx/io.hpp> // allows you to output vec3 in standard output.
 
 // Define globals for WIDTH and HEIGHT of the window (can be accessed from any renderer)
 extern const int WIDTH = 320;
@@ -39,10 +42,15 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 int main(int argc, char *argv[]) {
 	SDL_Event event;
 
-	// std::vector<float> result;
-	// result = colourSpectrumRenderer.interpolateSingleFloats(255.0, 0.0, window.width);
-	// for(size_t i=0; i<result.size(); i++) std::cout << result[i] << " ";
-	// std::cout << std::endl;
+	std::vector<glm::vec3> result;
+	glm::vec3 from(1.0, 4.0, 9.2);
+	glm::vec3 to(4.0, 1.0, 9.8);
+
+	result = colourSpectrumRenderer.interpolateThreeElementValues(from, to, 4);
+	for(size_t i=0; i<result.size(); i++) std::cout << result[i] << " ";
+	std::cout << std::endl;
+
+
 
 	while (true) { // forever loop
 		// We MUST poll for events - otherwise the window will freeze !
