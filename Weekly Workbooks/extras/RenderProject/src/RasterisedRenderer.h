@@ -6,3 +6,5 @@ class RasterisedRenderer: public Renderer {
    public:
       void draw(DrawingWindow &window) override;
 };
+
+
