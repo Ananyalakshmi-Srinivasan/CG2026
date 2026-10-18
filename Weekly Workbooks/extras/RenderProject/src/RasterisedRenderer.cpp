@@ -57,6 +57,59 @@ void RasterisedRenderer::drawFilledTriangles(CanvasTriangle triangle, DrawingWin
 	CanvasPoint v2 = triangle.vertices[1];
 	CanvasPoint v3 = triangle.vertices[2];
 
+	// make lists to store x and y coordinates
+	std::vector<float> yCoords;
+	std::vector<float> xCoords;
+
+	yCoords.push_back(v1.y);
+	yCoords.push_back(v2.y);
+	yCoords.push_back(v3.y);
+	std::cout << "yb  "<< v1.y << " "  << "x b "<< v2.y << " " <<  v3.y << " " <<  std::endl;
+
+	std::cout << "xb  "<< v1.x << " "  << "x b "<< v2.x << " " <<  v3.x << " " <<  std::endl;
+
+
+    std::sort(yCoords.begin(), yCoords.end());
+
+	if (v1.y == yCoords[0] && v2.y == yCoords[1] && v3.y == yCoords[2]) {
+		xCoords.push_back(v1.x);
+		xCoords.push_back(v2.x);
+		xCoords.push_back(v3.x);
+	} else if (v1.y == yCoords[0] && v2.y == yCoords[2] && v3.y == yCoords[1]) {
+		xCoords.push_back(v1.x);
+		xCoords.push_back( v3.x);
+		xCoords.push_back( v2.x);
+
+	} else if (v1.y == yCoords[1] && v2.y == yCoords[0] && v3.y == yCoords[2]) {
+		xCoords.push_back( v2.x);
+		xCoords.push_back( v1.x);
+		xCoords.push_back( v3.x);
+	} else if (v1.y == yCoords[1] && v2.y == yCoords[2] && v3.y == yCoords[0]) {
+		xCoords.push_back( v3.x);
+		xCoords.push_back( v1.x);
+		xCoords.push_back(v2.x);
+	} else if (v1.y == yCoords[2] && v2.y == yCoords[0] && v3.y == yCoords[1]) {
+		xCoords.push_back(  v2.x);
+		xCoords.push_back( v3.x);
+		xCoords.push_back(v1.x);
+	} else  {
+		xCoords.push_back( v3.x);
+		xCoords.push_back(v2.x);
+		xCoords.push_back( v1.x);
+	}
+
+
+	float bottomTopDiffY = yCoords[2] - yCoords[0];
+	float bottomTopDiffX = xCoords[2] - xCoords[0];
+	float gradientInverse = bottomTopDiffX/bottomTopDiffY; // x/y to get 1/m (y=mx+c where c = 0 )
+		//we have y dist between the middle point and top point by yCoords[1] - yCoords[0]
+		//we can work out the x difference by multiplying the y difference by the gradient inverse
+		// midYdiff*xdiff/ydiff= midXdiff.
+		// add midXdiff to the xCoords[0] -> if midXdiff <0  xCoords[0] +- midXdiff subtracts it.
+		// if its >0 then it adds as appropriate :) LORD WHY WAS THAT SO HARD???
+	float extraPointX = xCoords[0]+((yCoords[1]-yCoords[0]) * gradientInverse); // IT WORKS :D
+
+
 
 	/// split triangles
 	/// add to array and sort ascending y, to find 'highest point, middle and lowest point'
