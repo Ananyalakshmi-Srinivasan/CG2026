@@ -53,6 +53,11 @@ void RasterisedRenderer::drawStrokedTriangles(CanvasTriangle triangle, DrawingWi
 }
 
 void RasterisedRenderer::drawFilledTriangles(CanvasTriangle triangle, DrawingWindow &window, Colour colour) {
+	lineDrawing(triangle.vertices[0], triangle.vertices[1], window, colour);
+	//printf("%f",triangle.vertices[0].x);
+	lineDrawing(triangle.vertices[0], triangle.vertices[2], window, colour);
+	lineDrawing(triangle.vertices[1], triangle.vertices[2], window, colour);
+
 	CanvasPoint v1 = triangle.vertices[0];
 	CanvasPoint v2 = triangle.vertices[1];
 	CanvasPoint v3 = triangle.vertices[2];
