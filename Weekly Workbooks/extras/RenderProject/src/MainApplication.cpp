@@ -37,8 +37,26 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 		else if (event.key.keysym.sym == SDLK_RIGHT) std::cout << "RIGHT" << std::endl;
 		else if (event.key.keysym.sym == SDLK_UP) std::cout << "UP" << std::endl;
 		else if (event.key.keysym.sym == SDLK_DOWN) std::cout << "DOWN" << std::endl;
+
 		else if (event.key.keysym.sym == SDLK_u) {
-			printf("u \n");
+			// limit these to visual points in the screen.
+			CanvasPoint v1 = CanvasPoint(rand()%window.width, rand()%window.height);
+			CanvasPoint v2 = CanvasPoint(rand()%window.width, rand()%window.height);
+			CanvasPoint v3 = CanvasPoint(rand()%window.width, rand()%window.height);
+
+			Colour colour = Colour(rand()%256, rand()%256, rand()%256);
+
+
+			CanvasTriangle triangle = CanvasTriangle(v1, v2, v3);
+
+			rasterisedRenderer.drawFilledTriangles(triangle, window, colour);;
+			rasterisedRenderer.drawStrokedTriangles(triangle, window, Colour(255,255,255));
+
+
+
+
+		}
+		else if (event.key.keysym.sym == SDLK_f) {
 			// limit these to visual points in the screen.
 			CanvasPoint v1 = CanvasPoint(rand()%window.width, rand()%window.height);
 			CanvasPoint v2 = CanvasPoint(rand()%window.width, rand()%window.height);
@@ -47,9 +65,9 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 			Colour colour = Colour(rand()%256, rand()%256, rand()%256);
 
 			CanvasTriangle triangle = CanvasTriangle(v1, v2, v3);
-			rasterisedRenderer.drawStrokedTriangles(triangle, window, colour);
+
+			rasterisedRenderer.drawFilledTriangles(triangle, window, colour);;
 		}
-		else if (event.key.keysym.sym == SDLK_f) std::cout << "F" << std::endl;
 		else if (event.key.keysym.sym == SDLK_TAB) savingFrames = !savingFrames;
 		else if (event.key.keysym.sym == SDLK_RETURN) window.toggleFullscreen();
 	}
@@ -57,15 +75,6 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 
 int main(int argc, char *argv[]) {
 	SDL_Event event;
-
-	// std::vector<glm::vec3> result;
-	// glm::vec3 from(1.0, 4.0, 9.2);
-	// glm::vec3 to(4.0, 1.0, 9.8);
-	//
-	// result = colourSpectrumRenderer.interpolateThreeElementValues(from, to, 4);
-	// for(size_t i=0; i<result.size(); i++) std::cout << result[i] << " ";
-	// std::cout << std::endl;
-
 
 
 	while (true) { // forever loop

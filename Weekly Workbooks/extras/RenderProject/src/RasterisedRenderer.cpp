@@ -3,6 +3,9 @@
 #include <Colour.h>
 #include <vector>
 
+#include <glm/glm.hpp>
+#include <glm/gtx/io.hpp>
+#include "ColourSpectrumRenderer.h"
 #include "../libs/sdw/CanvasTriangle.h"
 
 class DrawingWindow;
@@ -10,13 +13,16 @@ class DrawingWindow;
 void RasterisedRenderer::draw(DrawingWindow &window) {
 	// window.clearPixels(); --> this empies the screen.
 
-	CanvasPoint canvasPointFromOne= CanvasPoint(0, 0);
-	CanvasPoint canvasPointToOne= CanvasPoint(window.width/2, window.height/2);
-
-	lineDrawing(canvasPointFromOne,canvasPointToOne, window, Colour(255,255,255));
+	// CanvasPoint canvasPointFromOne= CanvasPoint(0, 0);
+	// CanvasPoint canvasPointToOne= CanvasPoint(window.width/2, window.height/2);
+	//
+	// Colour WHITE = Colour(255,255,255);
+	// lineDrawing(canvasPointFromOne,canvasPointToOne, window, WHITE);
 
 
 }
+
+
 
 void RasterisedRenderer::lineDrawing(CanvasPoint from, CanvasPoint to, DrawingWindow &window, Colour colourOfLine) {
 
@@ -49,6 +55,44 @@ void RasterisedRenderer::drawStrokedTriangles(CanvasTriangle triangle, DrawingWi
 	//printf("%f",triangle.vertices[0].x);
 	lineDrawing(triangle.vertices[0], triangle.vertices[2], window, colour);
 	lineDrawing(triangle.vertices[1], triangle.vertices[2], window, colour);
+}
+
+std::vector<CanvasPoint> RasterisedRenderer::sortCoordsByY(std::vector<CanvasPoint>  unsortedVeritcies) {
+
+	int n = unsortedVeritcies.size();
+
+	// Outer loop that corresponds to the number of elements to be sorted
+	for (int i = 0; i < n - 1; i++) {
+		// Last i elements are already in place
+		for (int j = 0; j < n - i - 1; j++) {
+
+			// Comparing adjacent elements
+			if (unsortedVeritcies[j].y > unsortedVeritcies[j + 1].y)
+
+				// Swapping if in the wrong order
+					std::swap(unsortedVeritcies[j], unsortedVeritcies[j + 1]);
+		}
+	}
+	return unsortedVeritcies;
+}
+
+std::vector<CanvasPoint> RasterisedRenderer::obtainPoints(CanvasPoint firstPoint, CanvasPoint secondPoint, float pointCount) {
+
+	float bottomTopDiffY = secondPoint.y - firstPoint.y;
+	float bottomTopDiffX = secondPoint.x - firstPoint.x;
+	float gradientInverse = bottomTopDiffX/bottomTopDiffY;
+
+	ColourSpectrumRenderer interpolationFunctions;
+	std::vector<float> yPoints = interpolationFunctions.interpolateSingleFloats(firstPoint.y, secondPoint.y, pointCount);
+
+	std::vector<CanvasPoint> points;
+
+	for (float i = 1; i < pointCount; i++) {
+
+		float xPoint = firstPoint.x+((yPoints[i]-firstPoint.y) * gradientInverse); // IT WORKS :D
+		points.push_back(CanvasPoint(xPoint,yPoints[i]));
+	}
+	return points;
 
 }
 
@@ -58,66 +102,44 @@ void RasterisedRenderer::drawFilledTriangles(CanvasTriangle triangle, DrawingWin
 	lineDrawing(triangle.vertices[0], triangle.vertices[2], window, colour);
 	lineDrawing(triangle.vertices[1], triangle.vertices[2], window, colour);
 
-	CanvasPoint v1 = triangle.vertices[0];
-	CanvasPoint v2 = triangle.vertices[1];
-	CanvasPoint v3 = triangle.vertices[2];
+	std::vector<CanvasPoint> verticiesList;
 
-	// make lists to store x and y coordinates
-	std::vector<float> yCoords;
-	std::vector<float> xCoords;
-
-	yCoords.push_back(v1.y);
-	yCoords.push_back(v2.y);
-	yCoords.push_back(v3.y);
-	std::cout << "yb  "<< v1.y << " "  << "x b "<< v2.y << " " <<  v3.y << " " <<  std::endl;
-
-	std::cout << "xb  "<< v1.x << " "  << "x b "<< v2.x << " " <<  v3.x << " " <<  std::endl;
-
-
-    std::sort(yCoords.begin(), yCoords.end());
-
-	if (v1.y == yCoords[0] && v2.y == yCoords[1] && v3.y == yCoords[2]) {
-		xCoords.push_back(v1.x);
-		xCoords.push_back(v2.x);
-		xCoords.push_back(v3.x);
-	} else if (v1.y == yCoords[0] && v2.y == yCoords[2] && v3.y == yCoords[1]) {
-		xCoords.push_back(v1.x);
-		xCoords.push_back( v3.x);
-		xCoords.push_back( v2.x);
-
-	} else if (v1.y == yCoords[1] && v2.y == yCoords[0] && v3.y == yCoords[2]) {
-		xCoords.push_back( v2.x);
-		xCoords.push_back( v1.x);
-		xCoords.push_back( v3.x);
-	} else if (v1.y == yCoords[1] && v2.y == yCoords[2] && v3.y == yCoords[0]) {
-		xCoords.push_back( v3.x);
-		xCoords.push_back( v1.x);
-		xCoords.push_back(v2.x);
-	} else if (v1.y == yCoords[2] && v2.y == yCoords[0] && v3.y == yCoords[1]) {
-		xCoords.push_back(  v2.x);
-		xCoords.push_back( v3.x);
-		xCoords.push_back(v1.x);
-	} else  {
-		xCoords.push_back( v3.x);
-		xCoords.push_back(v2.x);
-		xCoords.push_back( v1.x);
+	for (int i =0; i <3; i++) {
+		verticiesList.push_back(triangle.vertices[i]);
 	}
+	verticiesList = sortCoordsByY(verticiesList);
 
-
-	float bottomTopDiffY = yCoords[2] - yCoords[0];
-	float bottomTopDiffX = xCoords[2] - xCoords[0];
+	float bottomTopDiffY = verticiesList[2].y - verticiesList[0].y;
+	float bottomTopDiffX = verticiesList[2].x - verticiesList[0].x;
 	float gradientInverse = bottomTopDiffX/bottomTopDiffY; // x/y to get 1/m (y=mx+c where c = 0 )
 		//we have y dist between the middle point and top point by yCoords[1] - yCoords[0]
 		//we can work out the x difference by multiplying the y difference by the gradient inverse
 		// midYdiff*xdiff/ydiff= midXdiff.
 		// add midXdiff to the xCoords[0] -> if midXdiff <0  xCoords[0] +- midXdiff subtracts it.
 		// if its >0 then it adds as appropriate :) LORD WHY WAS THAT SO HARD???
-	float extraPointX = xCoords[0]+((yCoords[1]-yCoords[0]) * gradientInverse); // IT WORKS :D
 
+	float extraPointX = verticiesList[0].x+((verticiesList[1].y-verticiesList[0].y) * gradientInverse); // IT WORKS :D
+	CanvasPoint extraPoint = CanvasPoint(extraPointX,verticiesList[1].y);
 
+	int numberOfRakes =  verticiesList[1].y-verticiesList[0].y;
+	std::vector<CanvasPoint> firstLinePoints = obtainPoints(verticiesList[0],verticiesList[1], numberOfRakes);
+	std::vector<CanvasPoint> secondLinePoints = obtainPoints(verticiesList[0],extraPoint, numberOfRakes);
 
-	/// split triangles
-	/// add to array and sort ascending y, to find 'highest point, middle and lowest point'
-	/// draw line from middle point --> work out x using triangles and ratio we have from y diff. :)
+	int bottomRakes =  verticiesList[2].y-verticiesList[1].y;
+	std::vector<CanvasPoint> downLinePoints = obtainPoints(verticiesList[1],verticiesList[2], bottomRakes);
+	std::vector<CanvasPoint> secondDownLinePoints = obtainPoints(extraPoint,verticiesList[2], bottomRakes);
 
+	std::cout << numberOfRakes << " " << bottomRakes  << " " << numberOfRakes+bottomRakes << " " << verticiesList[2].y-verticiesList[0].y << " ";
+	//top triangle
+	for (int  y = verticiesList[0].y; y < verticiesList[1].y; y++) {
+		for (int x = 0; x < round(numberOfRakes); x++) {
+			lineDrawing(firstLinePoints[x], secondLinePoints[x],window,colour);
+		}
+	}
+	// // bottom triangle
+	// for (int  y = verticiesList[1].y; y < verticiesList[2].y; y++) {
+	// 	for (int x = 0; x < bottomRakes; x++) {
+	// 		lineDrawing(downLinePoints[x], secondDownLinePoints[x],window,colour);
+	// 	}
+	// }
 }

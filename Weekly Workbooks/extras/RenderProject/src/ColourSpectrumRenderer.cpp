@@ -41,9 +41,9 @@ void ColourSpectrumRenderer::draw(DrawingWindow &window) {
 
             if ((barycentric.x > 0) && (barycentric.y > 0)  && (barycentric.z >0) ) { // if a barycentric coordinate for a pixel is negative then that pixel exists outside triangle
                // selects each row's vec3 and obtains the appropriate coordinate.
-               float red =255.0 *barycentric.x;
-               float green = 255.0* barycentric.z;
-               float blue = 255.0*barycentric.y;
+               float red = 255.0 * barycentric.x;
+               float green = 255.0 * barycentric.z;
+               float blue = 255.0 * barycentric.y;
 
                uint32_t colour = (255 << 24) + (int(red) << 16) + (int(green) << 8) + int(blue); // UNSIGNED INTEGER (THEREFORE, NEGATIVE INTEGER)
                window.setPixelColour(x, y, colour);
@@ -60,7 +60,7 @@ void ColourSpectrumRenderer::draw(DrawingWindow &window) {
 // the gradient is horizontal --> so as x changes colour should become more gray.from and to represent the colours, number ofvalues is the window.wdith
 
 // ColourSpectrumRenderer::function_name --> states its a member of the colour spectrum renderer
-std::vector<float> ColourSpectrumRenderer::interpolateSingleFloats(float from, float to, float numberOfValues) {
+   std::vector<float> ColourSpectrumRenderer::interpolateSingleFloats(float from, float to, float numberOfValues) {
 
    float difference = to-from; // find the difference between start and end/
    float intervals = numberOfValues -1.0;  // find the number of intervals
