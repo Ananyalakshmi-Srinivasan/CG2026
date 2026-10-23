@@ -13,7 +13,8 @@ class RasterisedRenderer: public Renderer {
       void drawStrokedTriangles(CanvasTriangle triangle, DrawingWindow &window, Colour colour);
       void drawFilledTriangles(CanvasTriangle triangle, DrawingWindow &window, Colour colour);
       std::vector<CanvasPoint> sortCoordsByY(std::vector<CanvasPoint>  unsortedVeritcies);
-      std::vector<CanvasPoint> obtainPoints(CanvasPoint firstPoint, CanvasPoint secondPoint, float pointCount);
+      std::vector<CanvasPoint> obtainPoints(CanvasPoint firstPoint, CanvasPoint secondPoint, int pointCount);
+      float calculateGradient(CanvasPoint p1, CanvasPoint p2);
 
 };
 

@@ -25,7 +25,7 @@ bool savingFrames = false;
 int frameCounter = 0;
 
 // Core 3D rendering data structures (for when we eventually get around to working in 3D ;o)
-std::vector<ModelTriangle> triangles;
+std::vector<ModelTriangle> triangles; // week 4
 std::vector<Colour> palette;
 glm::vec3 cameraPosition(0.0, 0.0, 4.0);
 glm::mat3 cameraOrientation;
@@ -40,6 +40,7 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 
 		else if (event.key.keysym.sym == SDLK_u) {
 			// limit these to visual points in the screen.
+
 			CanvasPoint v1 = CanvasPoint(rand()%window.width, rand()%window.height);
 			CanvasPoint v2 = CanvasPoint(rand()%window.width, rand()%window.height);
 			CanvasPoint v3 = CanvasPoint(rand()%window.width, rand()%window.height);
@@ -48,11 +49,7 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 
 
 			CanvasTriangle triangle = CanvasTriangle(v1, v2, v3);
-
-			rasterisedRenderer.drawFilledTriangles(triangle, window, colour);;
 			rasterisedRenderer.drawStrokedTriangles(triangle, window, Colour(255,255,255));
-
-
 
 
 		}
@@ -66,7 +63,10 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 
 			CanvasTriangle triangle = CanvasTriangle(v1, v2, v3);
 
-			rasterisedRenderer.drawFilledTriangles(triangle, window, colour);;
+			rasterisedRenderer.drawFilledTriangles(triangle, window, colour);
+			rasterisedRenderer.drawStrokedTriangles(triangle, window, Colour(255,255,255));
+
+
 		}
 		else if (event.key.keysym.sym == SDLK_TAB) savingFrames = !savingFrames;
 		else if (event.key.keysym.sym == SDLK_RETURN) window.toggleFullscreen();
