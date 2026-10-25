@@ -21,6 +21,61 @@ void RasterisedRenderer::draw(DrawingWindow &window) {
 
 }
 
+
+ std::vector<ModelTriangles>  RasterisedRenderer::readObjFile(std::string filename, std::vector<ModelTriangles> savedTriangle) {
+
+	std::ifstream file(filename); // read file
+	std::string currentLine; // string to store each line
+	std::vector<glm::vec3> verticesList; // stores verticies
+	Colour currentColour = Colour(255,255,255);
+	std::vector<std::vector<float>> faces; // stores face indicies.
+	// std::map<Colour, std::vector<float>> faces;
+	float scaleFactor = 0.35;
+
+	while (getline(file, currentLine)) {
+		std::cout << filename << std::endl;
+
+		std::vector<std::string> tokens = split(currentLine, ' '); // gets the first character after space of each line.
+
+		if (tokens[0] == "v") {
+			glm::vec3 vertices;
+
+			std::vector<std::string> lineTokens = split(currentLine, ' ');
+			for (int i = 0; i < lineTokens.size(); i++) { // should always be 3. 
+				if (lineTokens[i] == "v") continue;  // avoid first letter
+				// stof --> string to float.
+				// scale factor --> avoids bunnyzilla
+				vertices[i] = std::stof(lineTokens[i]) * scaleFactor;
+			}
+			verticesList.pushback(vertices);
+		} else if (tokens[0] == "f") {
+
+			std::vector<float> newFace;
+			std::vector<std::string> lineTokens = split(currentLine, ' ');
+
+			// tokens are formatted like '2/'; make sure we only get the number
+			for (const auto& token : lineTokens) {
+				if (token == "f") continue;  // avoid first letter
+				// must split tokens again to get rid of //
+				std::vector<std::string> splitToken = split(token, '/');
+				//vertices in OBJ are indexed from 1 --> hence when fetching the vertices from vertex list, subtract one from the index stored in the face list.
+				newFace.push_back(std::stof(token)-1.0); // push the index of the side to the vectorList
+			}
+			faces.push_back(newFace);
+		}
+
+		for (const auto& face : faces) {
+			for (const auto& vertexIndex : face) {
+
+			}
+		}
+
+
+	}
+	return savedTriangle;
+}
+
+
 void RasterisedRenderer::lineDrawing(CanvasPoint from, CanvasPoint to, DrawingWindow &window, Colour colourOfLine) {
 
 	int xDiff = to.x - from.x;
