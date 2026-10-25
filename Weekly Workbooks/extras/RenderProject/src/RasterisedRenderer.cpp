@@ -21,6 +21,38 @@ void RasterisedRenderer::draw(DrawingWindow &window) {
 
 }
 
+ <std::string,Colour> RasterisedRenderer::readMatFile(std::string filename, std::map<std::string,Colour> colourMap) {
+	std::ifstream file(filename); // read file
+	std::string currentLine; // string to store each line
+	std::string nameOfColour; // key Colour
+
+	bool isLineRGB = false;
+
+	while (getline (file, currentLine)) {
+
+		std::vector<std::string> tokens = split(currentLine, ' '); // gets the first character after space of each line.
+
+		// is a new colour being declared?
+		if (tokens[0] == "newmtl") {
+			// create new colour
+			nameOfColour = tokens[1];
+			isLineRGB = true;
+		}
+		if (isLineRGB) {
+			Colour colour;
+			// --> first number red , second number green, third number blue
+			colour.red = std::round(std::stof(tokens[1] *255.0f)); // indexing starts at 1.
+			colour.green = std::round(std::stof(tokens[2]*255.0f)); // indexing starts at 2.
+			colour.blue = std::round(std::stof(tokens[3]*255.0f)); // indexing starts at 3.
+
+			isLineRGB = false;
+			colourMap.emplace(nameOfColour,colour);
+		}
+	}
+	
+	return colourMap;
+}
+
 
  std::vector<ModelTriangles>  RasterisedRenderer::readObjFile(std::string filename, std::vector<ModelTriangles> savedTriangle) {
 
