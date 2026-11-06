@@ -113,6 +113,22 @@ float RasterisedRenderer::calculateGradient(CanvasPoint p1, CanvasPoint p2) {
 	return gradient;
 }
 
+std::vector<float> RasterisedRenderer::obtainZDepths(CanvasPoint firstPoint, CanvasPoint secondPoint, int pointCount) {
+	float gradientInverse = 1/calculateGradient(firstPoint, secondPoint);
+
+	ColourSpectrumRenderer interpolationFunctions;
+	std::vector<float> zPoints = interpolationFunctions.interpolateSingleFloats(firstPoint.depth, secondPoint.depth, float(pointCount));
+
+	// std::vector<CanvasPoint> points;
+	//
+	// for (int i = 0; i < pointCount; i++) {
+	// 	float xPoint = firstPoint.x+((yPoints[i]-firstPoint.y) * gradientInverse); // IT WORKS :D
+	// 	points.push_back(CanvasPoint(xPoint,yPoints[i]));
+	// }
+	return zPoints;
+}
+
+
 std::vector<CanvasPoint> RasterisedRenderer::obtainPoints(CanvasPoint firstPoint, CanvasPoint secondPoint, int pointCount) {
 	float gradientInverse = 1/calculateGradient(firstPoint, secondPoint);
 
