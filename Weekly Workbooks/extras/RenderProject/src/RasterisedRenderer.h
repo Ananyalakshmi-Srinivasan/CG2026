@@ -4,6 +4,10 @@
 #include "CanvasPoint.h"
 #include "CanvasTriangle.h"
 #include <Colour.h>
+#include <map>
+
+#include <glm/glm.hpp>
+#include <glm/gtx/io.hpp>
 
 
 class RasterisedRenderer: public Renderer {
@@ -15,7 +19,6 @@ class RasterisedRenderer: public Renderer {
       std::vector<CanvasPoint> sortCoordsByY(std::vector<CanvasPoint>  unsortedVeritcies);
       std::vector<CanvasPoint> obtainPoints(CanvasPoint firstPoint, CanvasPoint secondPoint, int pointCount);
       float calculateGradient(CanvasPoint p1, CanvasPoint p2);
-
 };
 
 

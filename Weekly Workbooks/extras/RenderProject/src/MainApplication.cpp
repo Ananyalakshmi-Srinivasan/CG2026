@@ -2,8 +2,13 @@
 #include "RedNoiseRenderer.h"
 #include "ColourSpectrumRenderer.h"
 #include "RasterisedRenderer.h"
+
+#include "Parser.h"
+#include "RasterisedProjector.h"
+
 #include <Colour.h>
 
+#include <map>
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -20,6 +25,8 @@ DrawingWindow window = DrawingWindow(WIDTH, HEIGHT); //
 RedNoiseRenderer redNoise = RedNoiseRenderer();
 ColourSpectrumRenderer colourSpectrumRenderer = ColourSpectrumRenderer();
 RasterisedRenderer rasterisedRenderer = RasterisedRenderer();
+RasterisedProjector rasterisedProjector = RasterisedProjector();
+Parser parser = Parser();
 Renderer* currentRenderer = &rasterisedRenderer;
 bool savingFrames = false;
 int frameCounter = 0;
@@ -27,9 +34,11 @@ int frameCounter = 0;
 // Core 3D rendering data structures (for when we eventually get around to working in 3D ;o)
 std::vector<ModelTriangle> triangles; // week 4
 std::vector<Colour> palette;
-glm::vec3 cameraPosition(0.0, 0.0, 4.0);
+std::map<std::string, Colour> colourPalette;
+glm::vec3 cameraPosition(0.0, 0.0, 4.0); // camera centered in the x and  y dimension but stepped a 'back a bit' in the z
 glm::mat3 cameraOrientation;
 glm::vec3 lightPosition(0.0, 0.8, 0.0);
+float focalLength = 2.0; // setting the focal length at 2.0 positions the image plane halfway between the camera and the centre of the model.
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
 	if (event.type == SDL_KEYDOWN) {
@@ -37,36 +46,28 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 		else if (event.key.keysym.sym == SDLK_RIGHT) std::cout << "RIGHT" << std::endl;
 		else if (event.key.keysym.sym == SDLK_UP) std::cout << "UP" << std::endl;
 		else if (event.key.keysym.sym == SDLK_DOWN) std::cout << "DOWN" << std::endl;
-
 		else if (event.key.keysym.sym == SDLK_u) {
 			// limit these to visual points in the screen.
+			// CanvasPoint v1 = CanvasPoint(rand()%window.width, rand()%window.height);
+			// CanvasPoint v2 = CanvasPoint(rand()%window.width, rand()%window.height);
+			// CanvasPoint v3 = CanvasPoint(rand()%window.width, rand()%window.height);
 
-			CanvasPoint v1 = CanvasPoint(rand()%window.width, rand()%window.height);
-			CanvasPoint v2 = CanvasPoint(rand()%window.width, rand()%window.height);
-			CanvasPoint v3 = CanvasPoint(rand()%window.width, rand()%window.height);
-
-			Colour colour = Colour(rand()%256, rand()%256, rand()%256);
-
-
-			CanvasTriangle triangle = CanvasTriangle(v1, v2, v3);
-			rasterisedRenderer.drawStrokedTriangles(triangle, window, Colour(255,255,255));
-
-
+			// Colour colour = Colour(rand()%256, rand()%256, rand()%256);
+			//CanvasTriangle triangle = CanvasTriangle(v1, v2, v3);
+			//rasterisedRenderer.drawStrokedTriangles(triangle, window, Colour(255,255,255));
 		}
 		else if (event.key.keysym.sym == SDLK_f) {
 			// limit these to visual points in the screen.
-			CanvasPoint v1 = CanvasPoint(rand()%window.width, rand()%window.height);
-			CanvasPoint v2 = CanvasPoint(rand()%window.width, rand()%window.height);
-			CanvasPoint v3 = CanvasPoint(rand()%window.width, rand()%window.height);
+			// CanvasPoint v1 = CanvasPoint(rand()%window.width, rand()%window.height);
+			// CanvasPoint v2 = CanvasPoint(rand()%window.width, rand()%window.height);
+			// CanvasPoint v3 = CanvasPoint(rand()%window.width, rand()%window.height);
 
-			Colour colour = Colour(rand()%256, rand()%256, rand()%256);
+			// Colour colour = Colour(rand()%256, rand()%256, rand()%256);
 
-			CanvasTriangle triangle = CanvasTriangle(v1, v2, v3);
+			//CanvasTriangle triangle = CanvasTriangle(v1, v2, v3);
 
-			rasterisedRenderer.drawFilledTriangles(triangle, window, colour);
-			rasterisedRenderer.drawStrokedTriangles(triangle, window, Colour(255,255,255));
-
-
+			//rasterisedRenderer.drawFilledTriangles(triangle, window, colour);
+			//rasterisedRenderer.drawStrokedTriangles(triangle, window, Colour(255,255,255));
 		}
 		else if (event.key.keysym.sym == SDLK_TAB) savingFrames = !savingFrames;
 		else if (event.key.keysym.sym == SDLK_RETURN) window.toggleFullscreen();
@@ -76,14 +77,46 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 int main(int argc, char *argv[]) {
 	SDL_Event event;
 
+	colourPalette = parser.readMatFile("/Users/asrinivasan/Documents/CG2026/Weekly Workbooks/04 Wireframes and Rasterising/models/cornell-box.mtl", colourPalette);
+	triangles = parser.readObjFile("/Users/asrinivasan/Documents/CG2026/Weekly Workbooks/04 Wireframes and Rasterising/models/cornell-box.obj",triangles, 0.35, colourPalette);
 
 	while (true) { // forever loop
 		// We MUST poll for events - otherwise the window will freeze !
-		if (window.pollForInputEvents(event)) handleEvent(event, window); /// polling for incoming mouse and keyboard events
+		if (window.pollForInputEvents(event)) handleEvent(event, window);
+
+
+		std::vector<CanvasTriangle> wireFrame;
+		std::map<CanvasTriangle, Colour> mapColourToWireframe;
+		// std::vector<CanvasPoint> pointCloud;  
+		for (auto&&modelTriangle : triangles) {
+			std::vector<CanvasPoint> triangleVertices;  
+			for (auto&&vertex : modelTriangle.vertices) {
+				CanvasPoint point = rasterisedProjector.projectVertexOntoCanvasPoint(cameraPosition, focalLength,vertex,window);
+				triangleVertices.push_back(point);
+				//pointCloud.push_back(point);
+			}
+			CanvasTriangle canvasTriangle = CanvasTriangle(triangleVertices[0], triangleVertices[1], triangleVertices[2]);
+			wireFrame.push_back(canvasTriangle);
+			mapColourToWireframe.insert({canvasTriangle, modelTriangle.colour});
+		}
+
+
+
+
+		uint32_t colour = (255 << 24) + (0 << 16) + (255 << 8) + 0; // UNSIGNED INTEGER (THEREFORE, NEGATIVE INTEGER)
+		for (auto&&[triangle, colour] : mapColourToWireframe) {
+			
+			//rasterisedRenderer.drawStrokedTriangles(triangle,window, Colour(255,255,255));
+			rasterisedRenderer.drawFilledTriangles(triangle, window, colour);
+			
+		}
+
+
+		/// polling for incoming mouse and keyboard events
 		// In C++ we can't use "." notation for dynamic dispatch, so we have to use -> instead :o(
-		currentRenderer->draw(window); /// draws scren with current renderer --> if something already drawn by event handline the window.clearPixels() cleans it.
+		//currentRenderer->draw(window);/// draws screen with current renderer --> if something already drawn by event handline the window.clearPixels() cleans it.
 		// Need to ask the SDL window to render the frame, otherwise nothing actually gets shown on the screen !
-		window.renderFrame(); // renders the memory buffera
+		window.renderFrame(); // renders the memory buffers
 
 
 		if(savingFrames) {

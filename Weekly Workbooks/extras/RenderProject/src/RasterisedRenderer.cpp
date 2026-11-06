@@ -1,17 +1,25 @@
 #include "RasterisedRenderer.h"
 #include <CanvasPoint.h>
 #include <Colour.h>
+#include <map>
+
 #include <vector>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/io.hpp>
 #include "ColourSpectrumRenderer.h"
 #include "../libs/sdw/CanvasTriangle.h"
+#include "../libs/sdw/Utils.h"
+#include <Colour.h>
+
+#include "../libs/sdw/DrawingWindow.h"
+#include "../libs/sdw/ModelTriangle.h"
+
 
 class DrawingWindow;
 
 void RasterisedRenderer::draw(DrawingWindow &window) {
-	// window.clearPixels(); --> this empies the screen.
+	//window.clearPixels(); //--> this empies the screen.
 
 	// CanvasPoint canvasPointFromOne= CanvasPoint(0, 0);
 	// CanvasPoint canvasPointToOne= CanvasPoint(window.width/2, window.height/2);
@@ -20,93 +28,6 @@ void RasterisedRenderer::draw(DrawingWindow &window) {
 	// lineDrawing(canvasPointFromOne,canvasPointToOne, window, WHITE);
 
 }
-
- <std::string,Colour> RasterisedRenderer::readMatFile(std::string filename, std::map<std::string,Colour> colourMap) {
-	std::ifstream file(filename); // read file
-	std::string currentLine; // string to store each line
-	std::string nameOfColour; // key Colour
-
-	bool isLineRGB = false;
-
-	while (getline (file, currentLine)) {
-
-		std::vector<std::string> tokens = split(currentLine, ' '); // gets the first character after space of each line.
-
-		// is a new colour being declared?
-		if (tokens[0] == "newmtl") {
-			// create new colour
-			nameOfColour = tokens[1];
-			isLineRGB = true;
-		}
-		if (isLineRGB) {
-			Colour colour;
-			// --> first number red , second number green, third number blue
-			colour.red = std::round(std::stof(tokens[1] *255.0f)); // indexing starts at 1.
-			colour.green = std::round(std::stof(tokens[2]*255.0f)); // indexing starts at 2.
-			colour.blue = std::round(std::stof(tokens[3]*255.0f)); // indexing starts at 3.
-
-			isLineRGB = false;
-			colourMap.emplace(nameOfColour,colour);
-		}
-	}
-	
-	return colourMap;
-}
-
-
- std::vector<ModelTriangles>  RasterisedRenderer::readObjFile(std::string filename, std::vector<ModelTriangles> savedTriangle) {
-
-	std::ifstream file(filename); // read file
-	std::string currentLine; // string to store each line
-	std::vector<glm::vec3> verticesList; // stores verticies
-	Colour currentColour = Colour(255,255,255);
-	std::vector<std::vector<float>> faces; // stores face indicies.
-	// std::map<Colour, std::vector<float>> faces;
-	float scaleFactor = 0.35;
-
-	while (getline(file, currentLine)) {
-		std::cout << filename << std::endl;
-
-		std::vector<std::string> tokens = split(currentLine, ' '); // gets the first character after space of each line.
-
-		if (tokens[0] == "v") {
-			glm::vec3 vertices;
-
-			std::vector<std::string> lineTokens = split(currentLine, ' ');
-			for (int i = 0; i < lineTokens.size(); i++) { // should always be 3. 
-				if (lineTokens[i] == "v") continue;  // avoid first letter
-				// stof --> string to float.
-				// scale factor --> avoids bunnyzilla
-				vertices[i] = std::stof(lineTokens[i]) * scaleFactor;
-			}
-			verticesList.pushback(vertices);
-		} else if (tokens[0] == "f") {
-
-			std::vector<float> newFace;
-			std::vector<std::string> lineTokens = split(currentLine, ' ');
-
-			// tokens are formatted like '2/'; make sure we only get the number
-			for (const auto& token : lineTokens) {
-				if (token == "f") continue;  // avoid first letter
-				// must split tokens again to get rid of //
-				std::vector<std::string> splitToken = split(token, '/');
-				//vertices in OBJ are indexed from 1 --> hence when fetching the vertices from vertex list, subtract one from the index stored in the face list.
-				newFace.push_back(std::stof(token)-1.0); // push the index of the side to the vectorList
-			}
-			faces.push_back(newFace);
-		}
-
-		for (const auto& face : faces) {
-			for (const auto& vertexIndex : face) {
-
-			}
-		}
-
-
-	}
-	return savedTriangle;
-}
-
 
 void RasterisedRenderer::lineDrawing(CanvasPoint from, CanvasPoint to, DrawingWindow &window, Colour colourOfLine) {
 
@@ -123,13 +44,11 @@ void RasterisedRenderer::lineDrawing(CanvasPoint from, CanvasPoint to, DrawingWi
 	// (i.e. the n.o intervals --> similar to interpolation)
 	float yStepSize = yDiff / numberOfSteps;
 
-	std::cout << numberOfSteps << std::endl;
 	for (int i=0; i <= numberOfSteps; i++) {
 		float x = from.x + (xStepSize * i);
 		float y = from.y + (yStepSize * i);
 
 		if (x>0 && y> 0 && x < window.width && y < window.height) { // restrict the drawing space//
-			// std::cout << round(x) << " " << round(y) <<  " " << std::endl;
 			window.setPixelColour(round(x), round(y), colour );
 			// can't have 1.5 pixel therefore need to round the x and y.
 		}
@@ -138,7 +57,6 @@ void RasterisedRenderer::lineDrawing(CanvasPoint from, CanvasPoint to, DrawingWi
 
 void RasterisedRenderer::drawStrokedTriangles(CanvasTriangle triangle, DrawingWindow &window, Colour colour) {
 	lineDrawing(triangle.vertices[0], triangle.vertices[1], window, colour);
-	//printf("%f",triangle.vertices[0].x);
 	lineDrawing(triangle.vertices[0], triangle.vertices[2], window, colour);
 	lineDrawing(triangle.vertices[1], triangle.vertices[2], window, colour);
 }
@@ -171,8 +89,6 @@ float RasterisedRenderer::calculateGradient(CanvasPoint p1, CanvasPoint p2) {
 }
 
 std::vector<CanvasPoint> RasterisedRenderer::obtainPoints(CanvasPoint firstPoint, CanvasPoint secondPoint, int pointCount) {
-
-
 	float gradientInverse = 1/calculateGradient(firstPoint, secondPoint);
 
 	ColourSpectrumRenderer interpolationFunctions;
@@ -185,17 +101,10 @@ std::vector<CanvasPoint> RasterisedRenderer::obtainPoints(CanvasPoint firstPoint
 		points.push_back(CanvasPoint(xPoint,yPoints[i]));
 	}
 	return points;
-
 }
 
 void RasterisedRenderer::drawFilledTriangles(CanvasTriangle triangle, DrawingWindow &window, Colour colour) {
-	std::cout << triangle.vertices[0] << " " << std::endl;
-	std::cout << triangle.vertices[1] << " " << std::endl;
-	std::cout << triangle.vertices[2] << " " << std::endl;
-
-	lineDrawing(triangle.vertices[0], triangle.vertices[1], window, colour);
-	lineDrawing(triangle.vertices[0], triangle.vertices[2], window, colour);
-	lineDrawing(triangle.vertices[1], triangle.vertices[2], window, colour);
+	drawStrokedTriangles(triangle, window, colour);
 
 	std::vector<CanvasPoint> verticiesList;
 
@@ -230,7 +139,6 @@ void RasterisedRenderer::drawFilledTriangles(CanvasTriangle triangle, DrawingWin
 	//top triangle
 	for (int  y = verticiesList[0].y; y < verticiesList[1].y; y++) {
 		for (int x = 0; x < numberOfRakes; x++) {
-			std::cout << firstLinePoints[x] << secondLinePoints[x] << " " << std::endl;
 			lineDrawing(firstLinePoints[x], secondLinePoints[x],window,colour);
 		}
 	}
@@ -238,7 +146,6 @@ void RasterisedRenderer::drawFilledTriangles(CanvasTriangle triangle, DrawingWin
 	// bottom triangle
 	for (int  y = verticiesList[1].y; y < verticiesList[2].y; y++) {
 		for (int x = 0; x < bottomRakes; x++) {
-			std::cout << downLinePoints[x] << secondDownLinePoints[x] << " bottom " << std::endl;
 			lineDrawing(downLinePoints[x], secondDownLinePoints[x],window,colour);
 		}
 	}
