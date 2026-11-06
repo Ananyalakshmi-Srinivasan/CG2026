@@ -28,6 +28,31 @@ void RasterisedRenderer::draw(DrawingWindow &window) {
 	// lineDrawing(canvasPointFromOne,canvasPointToOne, window, WHITE);
 
 }
+CanvasPoint RasterisedRenderer::projectVertexOntoCanvasPoint(glm::vec3 cameraPosition, float focalLength, glm::vec3 vertexPosition, DrawingWindow &window) {
+
+	// convert from model coordinate system to camera coordinate system. --> camera is origin.
+	// model. verticies  relative to the centre of the room
+
+
+	float imagePlaneScaling = 160.0;
+
+	glm::vec3 posRelativeToCamera = vertexPosition - cameraPosition;
+	float inverseZ = posRelativeToCamera.z;
+	// subtract from window.width for u to shift right. -->
+	// points with negative coordinates are meant to be projected onto the right of the plane.
+	// because 0,0 starts in middle of model when it attempts to project right side adjusted to camera it gets skewed weird?
+	// they are plotted outside the image plane --> so subtract from window width
+	//positive points are supposted to be on the left of image plane. negative on the right.
+
+	float u = window.width/2 -(focalLength * (posRelativeToCamera.x / posRelativeToCamera.z))*imagePlaneScaling ;
+	float v = (focalLength * (posRelativeToCamera.y/ posRelativeToCamera.z))*imagePlaneScaling +window.height/2;
+
+	CanvasPoint twoDPoint = CanvasPoint(round(u),round(v));
+	twoDPoint.depth = 1/inverseZ;
+
+	return twoDPoint;
+}
+
 
 void RasterisedRenderer::lineDrawing(CanvasPoint from, CanvasPoint to, DrawingWindow &window, Colour colourOfLine) {
 
