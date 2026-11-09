@@ -2,9 +2,7 @@
 #include "RedNoiseRenderer.h"
 #include "ColourSpectrumRenderer.h"
 #include "RasterisedRenderer.h"
-
 #include "Parser.h"
-#include "RasterisedProjector.h"
 
 #include <Colour.h>
 
@@ -17,6 +15,7 @@
 
 #include "../libs/sdw/CanvasTriangle.h"
 
+struct Colour;
 // Define globals for WIDTH and HEIGHT of the window (can be accessed from any renderer)
 extern const int WIDTH = 320;
 extern const int HEIGHT = 240;
@@ -25,7 +24,6 @@ DrawingWindow window = DrawingWindow(WIDTH, HEIGHT); //
 RedNoiseRenderer redNoise = RedNoiseRenderer();
 ColourSpectrumRenderer colourSpectrumRenderer = ColourSpectrumRenderer();
 RasterisedRenderer rasterisedRenderer = RasterisedRenderer();
-RasterisedProjector rasterisedProjector = RasterisedProjector();
 Parser parser = Parser();
 Renderer* currentRenderer = &rasterisedRenderer;
 bool savingFrames = false;
@@ -79,45 +77,40 @@ int main(int argc, char *argv[]) {
 
 	colourPalette = parser.readMatFile("/Users/asrinivasan/Documents/CG2026/Weekly Workbooks/04 Wireframes and Rasterising/models/cornell-box.mtl", colourPalette);
 	triangles = parser.readObjFile("/Users/asrinivasan/Documents/CG2026/Weekly Workbooks/04 Wireframes and Rasterising/models/cornell-box.obj",triangles, 0.35, colourPalette);
+	std::vector<float> zDepthBuffer(window.width*window.height, 0);
 
 	while (true) { // forever loop
 		// We MUST poll for events - otherwise the window will freeze !
 		if (window.pollForInputEvents(event)) handleEvent(event, window);
 
-
 		std::vector<CanvasTriangle> wireFrame;
-		std::map<CanvasTriangle, Colour> mapColourToWireframe;
-		// std::vector<CanvasPoint> pointCloud;  
+		std::vector<Colour> triangleColours; // colour of each canvas triangle
+		//std::vector<CanvasPoint> pointCloud;
+
 		for (auto&&modelTriangle : triangles) {
-			std::vector<CanvasPoint> triangleVertices;  
+			std::vector<CanvasPoint> triangleVertices;
 			for (auto&&vertex : modelTriangle.vertices) {
-				CanvasPoint point = rasterisedProjector.projectVertexOntoCanvasPoint(cameraPosition, focalLength,vertex,window);
+				CanvasPoint point = rasterisedRenderer.projectVertexOntoCanvasPoint(cameraPosition, focalLength,vertex,window);
 				triangleVertices.push_back(point);
 				//pointCloud.push_back(point);
 			}
 			CanvasTriangle canvasTriangle = CanvasTriangle(triangleVertices[0], triangleVertices[1], triangleVertices[2]);
 			wireFrame.push_back(canvasTriangle);
-			mapColourToWireframe.insert({canvasTriangle, modelTriangle.colour});
+			triangleColours.push_back(modelTriangle.colour);
 		}
 
-
-
-
-		uint32_t colour = (255 << 24) + (0 << 16) + (255 << 8) + 0; // UNSIGNED INTEGER (THEREFORE, NEGATIVE INTEGER)
-		for (auto&&[triangle, colour] : mapColourToWireframe) {
-			
-			//rasterisedRenderer.drawStrokedTriangles(triangle,window, Colour(255,255,255));
-			rasterisedRenderer.drawFilledTriangles(triangle, window, colour);
-			
+		// uint32_t colour = (255 << 24) + (0 << 16) + (255 << 8) + 0; // UNSIGNED INTEGER (THEREFORE, NEGATIVE INTEGER)
+		int triangleColourIndex = 0;
+		for (auto&&triangle : wireFrame) {
+			rasterisedRenderer.drawFilledTriangles(triangle, window, triangleColours[triangleColourIndex], zDepthBuffer);
+			triangleColourIndex++;
 		}
-
 
 		/// polling for incoming mouse and keyboard events
 		// In C++ we can't use "." notation for dynamic dispatch, so we have to use -> instead :o(
 		//currentRenderer->draw(window);/// draws screen with current renderer --> if something already drawn by event handline the window.clearPixels() cleans it.
 		// Need to ask the SDL window to render the frame, otherwise nothing actually gets shown on the screen !
 		window.renderFrame(); // renders the memory buffers
-
 
 		if(savingFrames) {
 			std::string paddedCounter = std::to_string(frameCounter);

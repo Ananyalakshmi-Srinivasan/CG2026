@@ -18,16 +18,7 @@
 
 class DrawingWindow;
 
-void Parser::draw(DrawingWindow &window) {
-	//window.clearPixels(); //--> this empies the screen.
-
-	// CanvasPoint canvasPointFromOne= CanvasPoint(0, 0);
-	// CanvasPoint canvasPointToOne= CanvasPoint(window.width/2, window.height/2);
-	//
-	// Colour WHITE = Colour(255,255,255);
-	// lineDrawing(canvasPointFromOne,canvasPointToOne, window, WHITE);
-
-}
+void Parser::draw(DrawingWindow &window) {}
 
 std::map<std::string, Colour> Parser::readMatFile(std::string filename, std::map<std::string,Colour> colourMap) {
 	std::ifstream file(filename); // read file
@@ -112,7 +103,7 @@ std::map<std::string, Colour> Parser::readMatFile(std::string filename, std::map
 			faces.insert({newFace, currentColour});
 		}
 	}
-	// go through all faces and create model triangles based on vertex information -- AFTER reading thru file 
+	// go through all faces and create model triangles based on vertex information -- AFTER reading thru file
 	for (const auto& [face, colour] : faces) {
 
 		ModelTriangle modelTriangle;
