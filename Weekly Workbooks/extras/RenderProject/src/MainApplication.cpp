@@ -20,7 +20,7 @@ struct Colour;
 extern const int WIDTH = 320;
 extern const int HEIGHT = 240;
 
-DrawingWindow window = DrawingWindow(WIDTH, HEIGHT); //
+DrawingWindow window = DrawingWindow(WIDTH, HEIGHT);
 RedNoiseRenderer redNoise = RedNoiseRenderer();
 ColourSpectrumRenderer colourSpectrumRenderer = ColourSpectrumRenderer();
 RasterisedRenderer rasterisedRenderer = RasterisedRenderer();
@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
 
 	colourPalette = parser.readMatFile("/Users/asrinivasan/Documents/CG2026/Weekly Workbooks/04 Wireframes and Rasterising/models/cornell-box.mtl", colourPalette);
 	triangles = parser.readObjFile("/Users/asrinivasan/Documents/CG2026/Weekly Workbooks/04 Wireframes and Rasterising/models/cornell-box.obj",triangles, 0.35, colourPalette);
-	std::vector<float> zDepthBuffer(window.width*window.height, 0);
+	std::vector<float> zDepthBuffer(window.width*window.height, 0.0);
 
 	while (true) { // forever loop
 		// We MUST poll for events - otherwise the window will freeze !
