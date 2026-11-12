@@ -78,14 +78,14 @@ void RasterisedRenderer::lineDrawing(CanvasPoint from, CanvasPoint to, DrawingWi
 
 		if (x>0 && y> 0 && x < window.width && y < window.height) { // restrict the drawing space//
 			int index = floor(abs(x- from.x)); // difference between
-			//float currentZDepth = zDepths[index]*-1.0;
+			float currentZDepth = zDepths[index]*-1.0;
 
-			//int i = y * window.width + x;
+			int i = y * window.width + x;
 
-			//if (zDepthBuffer[i] <= currentZDepth) {
+			if (zDepthBuffer[i] <= currentZDepth) {
 				window.setPixelColour(floor(x), floor(y), colour ); // can't have 1.5 pixel therefore need to round the x and y.
-			//	zDepthBuffer[i] = currentZDepth; //update zdepth buffer
-			//}
+				zDepthBuffer[i] = currentZDepth; //update zdepth buffer
+			}
 		}
 	}
 }
@@ -125,7 +125,7 @@ float RasterisedRenderer::calculateGradient(CanvasPoint p1, CanvasPoint p2) {
 
 std::vector<float> RasterisedRenderer::obtainZDepths(CanvasPoint firstPoint, CanvasPoint secondPoint, int pointCount) {
 	ColourSpectrumRenderer interpolationFunctions;
-	std::vector<float> zPoints = interpolationFunctions.interpolateSingleFloats(firstPoint.depth, secondPoint.depth, float(pointCount));
+	std::vector<float> zPoints = interpolationFunctions.interpolateSingleFloats(firstPoint.depth, secondPoint.depth, pointCount);
 	return zPoints;
 }
 
@@ -133,9 +133,9 @@ std::vector<CanvasPoint> RasterisedRenderer::obtainPoints(CanvasPoint firstPoint
 	float gradientInverse = 1/calculateGradient(firstPoint, secondPoint);
 
 	ColourSpectrumRenderer interpolationFunctions;
-	std::vector<float> yPoints = interpolationFunctions.interpolateSingleFloats(firstPoint.y, secondPoint.y, float(pointCount));
+	std::vector<float> yPoints = interpolationFunctions.interpolateSingleFloats(firstPoint.y, secondPoint.y, pointCount);
 
-	std::vector<float> zDepths = obtainZDepths(firstPoint, secondPoint, float(pointCount));
+	std::vector<float> zDepths = obtainZDepths(firstPoint, secondPoint, pointCount);
 
 	std::vector<CanvasPoint> points;
 

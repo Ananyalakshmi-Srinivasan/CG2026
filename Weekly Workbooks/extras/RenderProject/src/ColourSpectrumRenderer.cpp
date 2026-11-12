@@ -60,15 +60,15 @@ void ColourSpectrumRenderer::draw(DrawingWindow &window) {
 // the gradient is horizontal --> so as x changes colour should become more gray.from and to represent the colours, number ofvalues is the window.wdith
 
 // ColourSpectrumRenderer::function_name --> states its a member of the colour spectrum renderer
-   std::vector<float> ColourSpectrumRenderer::interpolateSingleFloats(float from, float to, float numberOfValues) {
+   std::vector<float> ColourSpectrumRenderer::interpolateSingleFloats(float from, float to, int numberOfValues) {
 
    float difference = to-from; // find the difference between start and end/
-   float intervals = numberOfValues -1.0;  // find the number of intervals
+   int intervals = numberOfValues -1;  // find the number of intervals
    float cDifference = difference/intervals; // find common difference between vector values.
 
    std::vector <float> result;
-   for (float i = 0; i < numberOfValues; i++) {
-      result.push_back(from + cDifference*i); // start + c.difference gives colour at different pixel
+   for (int i = 0; i < numberOfValues; i++) {
+      result.push_back(from + cDifference*float(i)); // start + c.difference gives colour at different pixel
    }
 
    return result;
