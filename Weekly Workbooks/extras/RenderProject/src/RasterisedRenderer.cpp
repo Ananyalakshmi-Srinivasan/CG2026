@@ -77,15 +77,15 @@ void RasterisedRenderer::lineDrawing(CanvasPoint from, CanvasPoint to, DrawingWi
 		float y = from.y + (yStepSize * i);
 
 		if (x>0 && y> 0 && x < window.width && y < window.height) { // restrict the drawing space//
-			int index = floor(abs(xDiff)); // difference between
-			float currentZDepth = zDepths[index];
+			int index = floor(abs(x- from.x)); // difference between
+			//float currentZDepth = zDepths[index]*-1.0;
 
-			int i = y * window.width + x;
+			//int i = y * window.width + x;
 
-			if (zDepthBuffer[i] > currentZDepth) {
+			//if (zDepthBuffer[i] <= currentZDepth) {
 				window.setPixelColour(floor(x), floor(y), colour ); // can't have 1.5 pixel therefore need to round the x and y.
-				zDepthBuffer[i] = currentZDepth; //update zdepth buffer
-			}
+			//	zDepthBuffer[i] = currentZDepth; //update zdepth buffer
+			//}
 		}
 	}
 }
