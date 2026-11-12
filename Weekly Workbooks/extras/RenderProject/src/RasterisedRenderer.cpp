@@ -69,21 +69,21 @@ void RasterisedRenderer::lineDrawing(CanvasPoint from, CanvasPoint to, DrawingWi
 	// (i.e. the n.o intervals --> similar to interpolation)
 	float yStepSize = yDiff / numberOfSteps;
 
-	//std::vector<float> zDepths = interpolationFunctions.interpolateSingleFloats(from.depth, to.depth, to.x-from.x);
-	std::vector<float> zDepths = obtainZDepths(from, to, to.x-from.x);
+	// std::vector<float> zDepths = interpolationFunctions.interpolateSingleFloats(from.depth, to.depth, to.x-from.x);
+	std::vector<float> zDepths = obtainZDepths(from, to, abs(xDiff));
 
 	for (int i=0; i <= numberOfSteps; i++) {
 		float x = from.x + (xStepSize * i);
 		float y = from.y + (yStepSize * i);
 
 		if (x>0 && y> 0 && x < window.width && y < window.height) { // restrict the drawing space//
-			int index = round(x-from.x); // difference between
+			int index = floor(abs(xDiff)); // difference between
 			float currentZDepth = zDepths[index];
 
 			int i = y * window.width + x;
 
-			if (zDepthBuffer[i] < currentZDepth) {
-				window.setPixelColour(round(x), round(y), colour ); // can't have 1.5 pixel therefore need to round the x and y.
+			if (zDepthBuffer[i] > currentZDepth) {
+				window.setPixelColour(floor(x), floor(y), colour ); // can't have 1.5 pixel therefore need to round the x and y.
 				zDepthBuffer[i] = currentZDepth; //update zdepth buffer
 			}
 		}
@@ -150,7 +150,7 @@ std::vector<CanvasPoint> RasterisedRenderer::obtainPoints(CanvasPoint firstPoint
 }
 
 void RasterisedRenderer::drawFilledTriangles(CanvasTriangle triangle, DrawingWindow &window, Colour colour, std::vector<float> &zDepthBuffer) {
-	drawStrokedTriangles(triangle, window, colour,  zDepthBuffer);
+	//drawStrokedTriangles(triangle, window, colour,  zDepthBuffer);
 
 	std::vector<CanvasPoint> verticiesList;
 
