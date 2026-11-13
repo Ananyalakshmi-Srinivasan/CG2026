@@ -30,15 +30,36 @@ void RayTracedRenderer::draw(DrawingWindow &window) {
 
 }
 
-void RayTracedRenderer::getClosestIntersection(glm::vec3 cameraPosition, glm::vec3 directionOfRay) {
-	//
-	// glm::vec3 e0 = triangle.vertices[1] - triangle.vertices[0]; // p1-p0
-	// glm::vec3 e1 = triangle.vertices[2] - triangle.vertices[0]; //p2 -p0
-	// glm::vec3 SPVector = cameraPosition - triangle.vertices[0];
-	// glm::mat3 DEMatrix(-directionOfRay, e0, e1); // -ray direction because negative z is away from us.
-	// // and screen is in direction oppsite us :)
-	// glm::vec3 possibleSolution = glm::inverse(DEMatrix) * SPVector;
-	// glm::vec3 r = triangle.vertices[0] + possibleSolution.y(e0) + possibleSolution.z(e1);
-	// // glm::vec3 positionVector =
+RayTriangleIntersection RayTracedRenderer::getClosestIntersection(glm::vec3 cameraPosition, glm::vec3 directionOfRay,std::vector<ModelTriangle> &triangles, int index) {
+
+	float absDistance = 0.0;
+	std::vector<RayTriangleIntersection> intersections;
+	RayTriangleIntersection closestIntersection;
+
+	for (int triangle = 0 ; triangle < triangles.size(); triangle++) {
+
+		glm::vec3 e0 = triangle.vertices[1] - triangle.vertices[0]; // p1-p0
+		glm::vec3 e1 = triangle.vertices[2] - triangle.vertices[0]; //p2 -p0
+		glm::vec3 SPVector = cameraPosition - triangle.vertices[0];
+		glm::mat3 DEMatrix(-directionOfRay, e0, e1); // -ray direction because negative z is away from us.
+		// and screen is in direction opposite us :)
+		glm::vec3 possibleSolution = glm::inverse(DEMatrix) * SPVector;
+		glm::vec3 r = triangle.vertices[0] + possibleSolution.y*e0 + possibleSolution.z*e1;
+		glm::vec3 positionVector = cameraPosition + (possibleSolution.x*directionOfRay);
+
+		if (positionVector == r) {
+			RayTriangleIntersection intersection = RayTriangleIntersection(r, possibleSolution.t, triangles[triangle], index);
+			// collect all intersections and get one with smallest absolute dist.
+			intersections.push_back(intersection);
+		}
+	}
+
+	for (auto&& intersect : intersections) {
+		if (intersect.distanceFromCamera < absDistance) {
+			absDistance = intersect.distanceFromCamera;
+			closestIntersection = intersect;
+		}
+	}
+	return closestIntersection;
 }
 
