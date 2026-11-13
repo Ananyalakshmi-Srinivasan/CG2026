@@ -13,6 +13,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/io.hpp> // allows you to output vec3 in standard output.
 
+#include "RayTracedRenderer.h"
 #include "../libs/sdw/CanvasTriangle.h"
 
 struct Colour;
@@ -24,19 +25,19 @@ DrawingWindow window = DrawingWindow(WIDTH, HEIGHT);
 RedNoiseRenderer redNoise = RedNoiseRenderer();
 ColourSpectrumRenderer colourSpectrumRenderer = ColourSpectrumRenderer();
 RasterisedRenderer rasterisedRenderer = RasterisedRenderer();
-Parser parser = Parser();
-Renderer* currentRenderer = &rasterisedRenderer;
+RayTracedRenderer rayTracedRenderer = RayTracedRenderer();
+// Parser parser = Parser();
+Renderer* currentRenderer = &rayTracedRenderer;
 bool savingFrames = false;
 int frameCounter = 0;
 
-// Core 3D rendering data structures (for when we eventually get around to working in 3D ;o)
-std::vector<ModelTriangle> triangles; // week 4
-std::vector<Colour> palette;
-std::map<std::string, Colour> colourPalette;
-glm::vec3 cameraPosition(0.0, 0.0, 4.0); // camera centered in the x and  y dimension but stepped a 'back a bit' in the z
-glm::mat3 cameraOrientation;
-glm::vec3 lightPosition(0.0, 0.8, 0.0);
-float focalLength = 2.0; // setting the focal length at 2.0 positions the image plane halfway between the camera and the centre of the model.
+// // Core 3D rendering data structures (for when we eventually get around to working in 3D ;o)
+// std::vector<ModelTriangle> triangles; // week 4
+// std::map<std::string, Colour> colourPalette;
+// glm::vec3 cameraPosition(0.0, 0.0, 4.0); // camera centered in the x and  y dimension but stepped a 'back a bit' in the z
+// glm::mat3 cameraOrientation;
+// glm::vec3 lightPosition(0.0, 0.8, 0.0);
+// float focalLength = 2.0; // setting the focal length at 2.0 positions the image plane halfway between the camera and the centre of the model.
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
 	if (event.type == SDL_KEYDOWN) {
@@ -75,40 +76,17 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 int main(int argc, char *argv[]) {
 	SDL_Event event;
 
-	colourPalette = parser.readMatFile("/Users/asrinivasan/Documents/CG2026/Weekly Workbooks/04 Wireframes and Rasterising/models/cornell-box.mtl", colourPalette);
-	triangles = parser.readObjFile("/Users/asrinivasan/Documents/CG2026/Weekly Workbooks/04 Wireframes and Rasterising/models/cornell-box.obj",triangles, 0.35, colourPalette);
-	std::vector<float> zDepthBuffer(window.width*window.height, 0.0);
+	// colourPalette = parser.readMatFile("/Users/asrinivasan/Documents/CG2026/Weekly Workbooks/04 Wireframes and Rasterising/models/cornell-box.mtl", colourPalette);
+	// triangles = parser.readObjFile("/Users/asrinivasan/Documents/CG2026/Weekly Workbooks/04 Wireframes and Rasterising/models/cornell-box.obj",triangles, 0.35, colourPalette);
+	// std::vector<float> zDepthBuffer(window.width*window.height, 0.0);
 
 	while (true) { // forever loop
 		// We MUST poll for events - otherwise the window will freeze !
 		if (window.pollForInputEvents(event)) handleEvent(event, window);
-
-		std::vector<CanvasTriangle> wireFrame;
-		std::vector<Colour> triangleColours; // colour of each canvas triangle
-		//std::vector<CanvasPoint> pointCloud;
-
-		for (auto&&modelTriangle : triangles) {
-			std::vector<CanvasPoint> triangleVertices;
-			for (auto&&vertex : modelTriangle.vertices) {
-				CanvasPoint point = rasterisedRenderer.projectVertexOntoCanvasPoint(cameraPosition, focalLength,vertex,window);
-				triangleVertices.push_back(point);
-				//pointCloud.push_back(point);
-			}
-			CanvasTriangle canvasTriangle = CanvasTriangle(triangleVertices[0], triangleVertices[1], triangleVertices[2]);
-			wireFrame.push_back(canvasTriangle);
-			triangleColours.push_back(modelTriangle.colour);
-		}
-
-		// uint32_t colour = (255 << 24) + (0 << 16) + (255 << 8) + 0; // UNSIGNED INTEGER (THEREFORE, NEGATIVE INTEGER)
-		int triangleColourIndex = 0;
-		for (auto&&triangle : wireFrame) {
-			rasterisedRenderer.drawFilledTriangles(triangle, window, triangleColours[triangleColourIndex], zDepthBuffer);
-			triangleColourIndex++;
-		}
-
+		
 		/// polling for incoming mouse and keyboard events
 		// In C++ we can't use "." notation for dynamic dispatch, so we have to use -> instead :o(
-		//currentRenderer->draw(window);/// draws screen with current renderer --> if something already drawn by event handline the window.clearPixels() cleans it.
+		currentRenderer->draw(window);/// draws screen with current renderer --> if something already drawn by event handline the window.clearPixels() cleans it.
 		// Need to ask the SDL window to render the frame, otherwise nothing actually gets shown on the screen !
 		window.renderFrame(); // renders the memory buffers
 

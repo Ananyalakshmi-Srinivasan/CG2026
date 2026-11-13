@@ -2,3 +2,22 @@
 *.o
 /Weekly Workbooks/extras/RenderProject/build
 Weekly Workbooks/extras/RenderProject/build/MainApplication
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/compile_commands.json
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/CMakeFiles/rules.ninja
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/CMakeFiles/CMakeConfigureLog.yaml
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/CMakeFiles/4.4.2/CompilerIdCXX/CMakeCXXCompilerId.cpp
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/CMakeFiles/4.4.2/CompilerIdCXX/apple-sdk.cpp
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/CMakeFiles/4.4.2/CompilerIdCXX/a.out
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/CMakeFiles/4.4.2/CompilerIdC/CMakeCCompilerId.c
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/CMakeFiles/4.4.2/CompilerIdC/apple-sdk.c
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/CMakeFiles/4.4.2/CompilerIdC/a.out
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/CMakeFiles/4.4.2/CMakeSystem.cmake
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/CMakeFiles/4.4.2/CMakeDetermineCompilerABI_CXX.bin
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/CMakeFiles/4.4.2/CMakeDetermineCompilerABI_C.bin
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/CMakeFiles/4.4.2/CMakeCXXCompiler.cmake
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/CMakeFiles/4.4.2/CMakeCCompiler.cmake
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/CMakeCache.txt
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/build.ninja
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/.ninja_log
+Weekly Workbooks/extras/RenderProject/cmake-build-debug/.ninja_deps
+Weekly Workbooks/extras/RenderProject/build/MainApplication

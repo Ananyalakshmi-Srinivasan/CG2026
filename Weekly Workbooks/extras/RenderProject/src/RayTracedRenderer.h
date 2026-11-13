@@ -5,8 +5,7 @@
 #include "CanvasTriangle.h"
 #include <Colour.h>
 #include <map>
-// #include "../libs/sdw/RayTriangleIntersection.cpp"
-// #include "../libs/sdw/RayTriangleIntersection.h"
+#include "../libs/sdw/RayTriangleIntersection.h"
 
 
 #include <glm/glm.hpp>
@@ -16,7 +15,7 @@
 class RayTracedRenderer: public Renderer {
    public:
       void draw(DrawingWindow &window) override;
-      void getClosestIntersection(glm::vec3 cameraPosition, glm::vec3 directionOfRay);
+      RayTriangleIntersection getClosestIntersection(glm::vec3 cameraPosition, glm::vec3 directionOfRay, std::vector<ModelTriangle> &triangles);
 };
 
 
