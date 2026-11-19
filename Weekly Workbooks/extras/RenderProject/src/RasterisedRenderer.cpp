@@ -211,7 +211,6 @@ std::vector<CanvasPoint> RasterisedRenderer::obtainPoints(CanvasPoint firstPoint
 	float gradientInverse = 0;
 	std::vector<float> xPoints =utilityFunctions::interpolateSingleFloats(firstPoint.x, secondPoint.x, pointCount);
 
-
 	if (gradient != 0) {gradientInverse = 1/gradient;} // x/y to get 1/m (y=mx+c where c = 0 )
 
 	std::vector<float> yPoints = utilityFunctions::interpolateSingleFloats(firstPoint.y, secondPoint.y, pointCount);
@@ -246,8 +245,9 @@ void RasterisedRenderer::drawFilledTriangles(CanvasTriangle triangle, DrawingWin
 
 	// if y = 0 function has slope 1/z
 	float zGradient = calculateZGradient(verticiesList[0], verticiesList[2]);
-	float inverseZGradient =1/zGradient;
-	if (zGradient == 0) {std::cout << "zGradient is 0" << std::endl;}
+	float inverseZGradient;
+	float extraPointZ;
+
 	 // if zDiff is 0 zGradient is 0.
 
 
@@ -258,7 +258,14 @@ void RasterisedRenderer::drawFilledTriangles(CanvasTriangle triangle, DrawingWin
 	// if its >0 then it adds as appropriate :) LORD WHY WAS THAT SO HARD???
 
 	float extraPointX = verticiesList[0].x+((verticiesList[1].y-verticiesList[0].y) * gradientInverse); // IT WORKS :D
-	float extraPointZ = verticiesList[0].depth+((verticiesList[1].y-verticiesList[0].y) * inverseZGradient);
+	std::vector<float> zDepths = utilityFunctions::interpolateSingleFloats(verticiesList[0].depth, verticiesList[1].depth, floor(abs(extraPointX - verticiesList[1].x)));
+	if (zGradient != 0) {
+		inverseZGradient = 1/zGradient;
+		extraPointZ = verticiesList[0].depth+((verticiesList[1].y-verticiesList[0].y) * inverseZGradient);
+	} else {
+		std::cout<<"Z gradient: 0 "<<zGradient<<std::endl;
+		extraPointZ = zDepths[zDepths.size()-1];
+	}
 	CanvasPoint extraPoint = CanvasPoint((extraPointX),verticiesList[1].y, extraPointZ);
 
 	int numberOfRakes = verticiesList[1].y-verticiesList[0].y + 1;

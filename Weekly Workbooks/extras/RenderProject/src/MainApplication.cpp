@@ -39,21 +39,17 @@ int triangleInd = 0;
 //Renderers
 RasterisedRenderer rasterisedRenderer = RasterisedRenderer(cameraPosition, lightPosition, cameraOrientation, focalLength, colourPalette, triangles, zDepthBuffer, triangleInd);
 RayTracedRenderer rayTracedRenderer = RayTracedRenderer(cameraPosition, lightPosition, cameraOrientation, focalLength, colourPalette, triangles);
-Renderer* currentRenderer = &rayTracedRenderer; // pointer to current renderer
+Renderer* currentRenderer = &rasterisedRenderer; // pointer to current renderer
 
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
 	if (event.type == SDL_KEYDOWN) {
 		if (event.key.keysym.sym == SDLK_LEFT) {
 			glm::vec3 translationVector(1.0, 0.0, 0.0);
-			cameraPosition += translationVector;
-			// std::cout << zDepthBuffer[0] << std::endl;
-			// std::cout << zDepthBuffer[window.width*window.height-1] << std::endl;
-
+			cameraPosition = utilityFunctions::translateCameraPosition(cameraPosition, translationVector);
 		}
 		else if (event.key.keysym.sym == SDLK_RIGHT) {
 			glm::vec3 translationVector(1.0, 0.0, 0.0);
-			std::cout <<cameraPosition << std::endl;
 			cameraPosition -= translationVector;
 		}
 		else if (event.key.keysym.sym == SDLK_UP) {
