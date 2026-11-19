@@ -34,20 +34,48 @@ glm::mat3 cameraOrientation;
 glm::vec3 lightPosition(0.0, 0.8, 0.0);
 float focalLength = 2.0; // setting the focal length at 2.0 positions the image plane halfway between the camera and the centre of the model.
 std::vector <float> zDepthBuffer(WIDTH*HEIGHT, 0.0);
+int triangleInd = 0;
 
 //Renderers
-RasterisedRenderer rasterisedRenderer = RasterisedRenderer(cameraPosition, lightPosition, cameraOrientation, focalLength, colourPalette, triangles, zDepthBuffer);
+RasterisedRenderer rasterisedRenderer = RasterisedRenderer(cameraPosition, lightPosition, cameraOrientation, focalLength, colourPalette, triangles, zDepthBuffer, triangleInd);
 RayTracedRenderer rayTracedRenderer = RayTracedRenderer(cameraPosition, lightPosition, cameraOrientation, focalLength, colourPalette, triangles);
 Renderer* currentRenderer = &rayTracedRenderer; // pointer to current renderer
 
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
 	if (event.type == SDL_KEYDOWN) {
-		if (event.key.keysym.sym == SDLK_LEFT) std::cout << "LEFT" << std::endl;
-		else if (event.key.keysym.sym == SDLK_RIGHT) std::cout << "RIGHT" << std::endl;
-		else if (event.key.keysym.sym == SDLK_UP) std::cout << "UP" << std::endl;
-		else if (event.key.keysym.sym == SDLK_DOWN) std::cout << "DOWN" << std::endl;
-		else if (event.key.keysym.sym == SDLK_u) std::cout << "u" << std::endl;
+		if (event.key.keysym.sym == SDLK_LEFT) {
+			glm::vec3 translationVector(1.0, 0.0, 0.0);
+			cameraPosition += translationVector;
+			// std::cout << zDepthBuffer[0] << std::endl;
+			// std::cout << zDepthBuffer[window.width*window.height-1] << std::endl;
+
+		}
+		else if (event.key.keysym.sym == SDLK_RIGHT) {
+			glm::vec3 translationVector(1.0, 0.0, 0.0);
+			std::cout <<cameraPosition << std::endl;
+			cameraPosition -= translationVector;
+		}
+		else if (event.key.keysym.sym == SDLK_UP) {
+
+			glm::vec3 translationVector(0.0, 1.0, 0.0);
+			cameraPosition -= translationVector;
+			std::cout <<cameraPosition << std::endl;
+		}
+		else if (event.key.keysym.sym == SDLK_DOWN) {
+			glm::vec3 translationVector(0.0, 1.0, 0.0);
+			cameraPosition += translationVector;
+			std::cout <<cameraPosition << std::endl;
+		}
+		else if (event.key.keysym.sym == SDLK_u) {
+			if (triangleInd < triangles.size()) {
+				rasterisedRenderer.incrementTriangleInd(1);
+			} else {
+				triangleInd = 0;
+				rasterisedRenderer.resetTriangleInd();
+			}
+
+		}
 		else if (event.key.keysym.sym == SDLK_f) std::cout << "f" << std::endl;
 		else if (event.key.keysym.sym == SDLK_TAB) savingFrames = !savingFrames;
 		else if (event.key.keysym.sym == SDLK_RETURN) window.toggleFullscreen();
@@ -69,10 +97,11 @@ int main(int argc, char *argv[]) {
 	while (true) { // forever loop
 		// We MUST poll for events - otherwise the window will freeze !
 		if (window.pollForInputEvents(event)) handleEvent(event, window);
+		currentRenderer->draw(window);
 
 		/// polling for incoming mouse and keyboard events
 		// In C++ we can't use "." notation for dynamic dispatch, so we have to use -> instead :o(
-		currentRenderer->draw(window);/// draws screen with current renderer --> if something already drawn by event handline the window.clearPixels() cleans it.
+		//currentRenderer->draw(window);/// draws screen with current renderer --> if something already drawn by event handline the window.clearPixels() cleans it.
 		// Need to ask the SDL window to render the frame, otherwise nothing actually gets shown on the screen !
 		window.renderFrame(); // renders the memory buffers
 

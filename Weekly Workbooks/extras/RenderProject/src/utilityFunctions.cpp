@@ -8,6 +8,8 @@
 #include <vector>
 #include <glm/glm.hpp>
 
+#include "Renderer.h"
+
 
 std::map<std::string, Colour> utilityFunctions::readMatFile(std::string filename, std::map<std::string,Colour> &colourMap) {
 	std::ifstream file(filename); // read file
@@ -123,6 +125,8 @@ std::vector<float> utilityFunctions::interpolateSingleFloats(float from, float t
 	int intervals = numberOfValues -1;  // find the number of intervals
 	float cDifference = difference/float(intervals); // find common difference between vector values.
 
+	if (intervals == 0 ) {cDifference = 1.0;}
+
 	std::vector <float> result;
 	for (int i = 0; i < numberOfValues; i++) {
 		result.push_back(from + cDifference*float(i)); // start + c.difference gives colour at different pixel
@@ -152,5 +156,16 @@ uint32_t utilityFunctions::convertColourToUint32(const Colour& colour) {
 }
 
 glm::vec3 utilityFunctions::translateCameraPosition(glm::vec3 cameraPosition, glm::vec3 translationVector) {
-    return 0;
+    if (glm::normalize(translationVector) == glm::vec3(0.0,0.0,0.0)) return cameraPosition;
+
+	cameraPosition = cameraPosition - translationVector;
+	return cameraPosition;
+}
+
+std::vector<float> utilityFunctions::clearDepthBuffer(std::vector<float> depthBuffer) {
+	for (float & i : depthBuffer) {
+		i = 0.0;
+	}
+
+	return depthBuffer;
 }
