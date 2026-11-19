@@ -245,11 +245,9 @@ void RasterisedRenderer::drawFilledTriangles(CanvasTriangle triangle, DrawingWin
 
 	// if y = 0 function has slope 1/z
 	float zGradient = calculateZGradient(verticiesList[0], verticiesList[2]);
-	float inverseZGradient;
 	float extraPointZ;
 
 	 // if zDiff is 0 zGradient is 0.
-
 
 	//we have y dist between the middle point and top point by yCoords[1] - yCoords[0]
 	//we can work out the x difference by multiplying the y difference by the gradient inverse
@@ -260,10 +258,9 @@ void RasterisedRenderer::drawFilledTriangles(CanvasTriangle triangle, DrawingWin
 	float extraPointX = verticiesList[0].x+((verticiesList[1].y-verticiesList[0].y) * gradientInverse); // IT WORKS :D
 	std::vector<float> zDepths = utilityFunctions::interpolateSingleFloats(verticiesList[0].depth, verticiesList[1].depth, floor(abs(extraPointX - verticiesList[1].x)));
 	if (zGradient != 0) {
-		inverseZGradient = 1/zGradient;
-		extraPointZ = verticiesList[0].depth+((verticiesList[1].y-verticiesList[0].y) * inverseZGradient);
+		zGradient = 1/zGradient;
+		extraPointZ = verticiesList[0].depth+((verticiesList[1].y-verticiesList[0].y) * zGradient);
 	} else {
-		std::cout<<"Z gradient: 0 "<<zGradient<<std::endl;
 		extraPointZ = zDepths[zDepths.size()-1];
 	}
 	CanvasPoint extraPoint = CanvasPoint((extraPointX),verticiesList[1].y, extraPointZ);

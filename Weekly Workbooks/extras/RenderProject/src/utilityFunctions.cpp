@@ -166,6 +166,5 @@ std::vector<float> utilityFunctions::clearDepthBuffer(std::vector<float> depthBu
 	for (float & i : depthBuffer) {
 		i = 0.0;
 	}
-
 	return depthBuffer;
 }
