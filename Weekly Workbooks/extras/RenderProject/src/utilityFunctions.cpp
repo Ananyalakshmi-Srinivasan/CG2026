@@ -162,6 +162,27 @@ glm::vec3 utilityFunctions::translateCameraPosition(glm::vec3 cameraPosition, gl
 	return cameraPosition;
 }
 
+// get's cos theta between camera and a scene vector.
+float utilityFunctions::getCosAngle(glm::vec3 cameraPosition, glm::vec3 sceneVector) {
+    float dot = glm::dot(cameraPosition, sceneVector);
+	float magCamera = length(cameraPosition);
+	float magScene = length(sceneVector);
+
+
+	float angle = dot/(magCamera*magScene);
+	return angle;
+}
+
+float utilityFunctions::getSinAngle(float cosAngle) {
+	float sinAngle = sqrt(1- (cosAngle*cosAngle));
+	return sinAngle;
+}
+
+glm::vec3 utilityFunctions::rotateCamera(glm::vec3 cameraPosition, glm::mat3 rotationMatrix) {
+	cameraPosition = rotationMatrix*cameraPosition;
+	return cameraPosition;
+}
+
 std::vector<float> utilityFunctions::clearDepthBuffer(std::vector<float> depthBuffer) {
 	for (float & i : depthBuffer) {
 		i = 0.0;
