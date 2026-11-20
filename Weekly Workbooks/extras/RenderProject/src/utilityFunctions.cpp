@@ -197,9 +197,22 @@ glm::mat3 utilityFunctions::tiltedMatrix(float cos, float sin, glm::mat3 cameraO
 	return newCameraOrientation;
 }
 
-std::vector<float> utilityFunctions::clearDepthBuffer(std::vector<float> depthBuffer) {
-	for (float & i : depthBuffer) {
-		i = 0.0;
-	}
-	return depthBuffer;
+glm::mat3 utilityFunctions::pannedMatrix(float cos, float sin, glm::mat3 cameraOrientation) {
+	glm::vec3 col1(cos, 0.0, -sin);
+	glm::vec3 col2(0.0, 1.0, 0.0);
+	glm::vec3 col3(sin, 0.0, cos);
+	glm::mat3 rotationMatrix = glm::mat3(col1, col2, col3);
+
+	glm::mat3 newCameraOrientation = rotationMatrix*cameraOrientation;
+	return newCameraOrientation;
+}
+
+glm::mat3 utilityFunctions::rolledMatrix(float cos, float sin, glm::mat3 cameraOrientation) {
+	glm::vec3 col1(cos, sin, 0.0);
+	glm::vec3 col2(-sin, cos, 0.0);
+	glm::vec3 col3(0.0, 0.0, 1.0);
+	glm::mat3 rotationMatrix = glm::mat3(col1, col2, col3);
+
+	glm::mat3 newCameraOrientation = rotationMatrix*cameraOrientation;
+	return newCameraOrientation;
 }
