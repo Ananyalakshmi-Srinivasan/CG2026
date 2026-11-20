@@ -187,9 +187,14 @@ float utilityFunctions::getSinAngle(glm::vec3 cameraPosition, glm::vec3 sceneVec
 	return angle;
 }
 
-glm::mat3 utilityFunctions::rotateCamera(glm::mat3 cameraOrientation, glm::mat3 rotationMatrix) {
-	glm::mat3 newCameraPos = cameraOrientation*rotationMatrix;
-	return newCameraPos;
+glm::mat3 utilityFunctions::tiltedMatrix(float cos, float sin, glm::mat3 cameraOrientation) {
+	glm::vec3 col1(1.0, 0.0, 0.0);
+	glm::vec3 col2(0.0, cos, sin);
+	glm::vec3 col3(0.0, -sin, cos);
+	glm::mat3 rotationMatrix = glm::mat3(col1, col2, col3);
+
+	glm::mat3 newCameraOrientation = rotationMatrix*cameraOrientation;
+	return newCameraOrientation;
 }
 
 std::vector<float> utilityFunctions::clearDepthBuffer(std::vector<float> depthBuffer) {
