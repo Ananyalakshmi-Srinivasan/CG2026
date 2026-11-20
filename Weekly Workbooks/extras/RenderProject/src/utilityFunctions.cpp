@@ -216,3 +216,15 @@ glm::mat3 utilityFunctions::rolledMatrix(float cos, float sin, glm::mat3 cameraO
 	glm::mat3 newCameraOrientation = rotationMatrix*cameraOrientation;
 	return newCameraOrientation;
 }
+
+glm::vec3 utilityFunctions::orbit(glm::vec3 cameraPosition, glm::mat3 rotationMatrix){
+	cameraPosition = cameraPosition*rotationMatrix;
+	return cameraPosition;
+}
+
+std::vector<float> utilityFunctions::clearDepthBuffer(std::vector<float> depthBuffer) {
+	for (float & i : depthBuffer) {
+		i = 0.0;
+	}
+	return depthBuffer;
+}
