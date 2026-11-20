@@ -173,9 +173,18 @@ float utilityFunctions::getCosAngle(glm::vec3 cameraPosition, glm::vec3 sceneVec
 	return angle;
 }
 
-float utilityFunctions::getSinAngle(float cosAngle) {
-	float sinAngle = sqrt(1- (cosAngle*cosAngle));
-	return sinAngle;
+float utilityFunctions::getSinAngle(glm::vec3 cameraPosition, glm::vec3 sceneVector) {
+	glm::vec3 crossVec = glm::cross(cameraPosition, sceneVector);
+
+	float cross = glm::length(crossVec);
+
+	float magCamera = length(cameraPosition);
+	float magScene = length(sceneVector);
+
+	float angle = cross/(magCamera*magScene);
+
+
+	return angle;
 }
 
 glm::vec3 utilityFunctions::rotateCamera(glm::vec3 cameraPosition, glm::mat3 rotationMatrix) {
