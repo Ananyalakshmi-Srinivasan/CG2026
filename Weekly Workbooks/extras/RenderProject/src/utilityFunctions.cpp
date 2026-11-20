@@ -187,9 +187,9 @@ float utilityFunctions::getSinAngle(glm::vec3 cameraPosition, glm::vec3 sceneVec
 	return angle;
 }
 
-glm::vec3 utilityFunctions::rotateCamera(glm::vec3 cameraPosition, glm::mat3 rotationMatrix) {
-	cameraPosition = rotationMatrix*cameraPosition;
-	return cameraPosition;
+glm::mat3 utilityFunctions::rotateCamera(glm::mat3 cameraOrientation, glm::mat3 rotationMatrix) {
+	glm::mat3 newCameraPos = cameraOrientation*rotationMatrix;
+	return newCameraPos;
 }
 
 std::vector<float> utilityFunctions::clearDepthBuffer(std::vector<float> depthBuffer) {
