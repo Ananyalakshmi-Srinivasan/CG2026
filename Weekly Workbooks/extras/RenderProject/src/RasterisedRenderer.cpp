@@ -94,7 +94,9 @@ void RasterisedRenderer::lineDrawing(CanvasPoint from, CanvasPoint to, DrawingWi
 
 	float numberOfSteps = fmax(abs(xDiff), abs(yDiff));
 
-	if (numberOfSteps>0) {
+	if (std::isinf(numberOfSteps)) std::cout << "is infinite" << std::endl;
+
+	if (numberOfSteps>0 && !std::isinf(numberOfSteps)) {// stops drawing if number of steps is infinite
 		// always using the bigger number of steps ensures we don't skip pixels --> how does that ensure this?
 		float xStepSize = xDiff / numberOfSteps;
 		// work out step size of x or y by dividing total distance by number of steps take
