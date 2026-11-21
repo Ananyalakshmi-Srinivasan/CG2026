@@ -238,9 +238,8 @@ glm::mat3 utilityFunctions::lookAt(glm::vec3 cameraPosition,glm::vec3 centreOfSc
 		// centre (0,0,0) , camera (0,0,4) , direction (0,0,-4)
 	forwardVector = glm::normalize(forwardVector);
 	glm::vec3 vertical(0.0,1.0,0.0);
-	glm::vec3 rightVector =  glm::cross(vertical,forwardVector);
-	glm::vec3 upVector = glm::cross(forwardVector,rightVector);
-
+	glm::vec3 rightVector =  glm::cross(forwardVector,vertical); // slides have these the other way
+	glm::vec3 upVector = glm::cross(rightVector,forwardVector); // slide had this the other way.
 
 	cameraOrientation = glm::mat3(rightVector, upVector, forwardVector);
 	return cameraOrientation;
