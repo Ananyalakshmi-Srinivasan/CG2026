@@ -222,6 +222,29 @@ glm::vec3 utilityFunctions::orbit(glm::vec3 cameraPosition, glm::mat3 rotationMa
 	return cameraPosition;
 }
 
+glm::mat3 utilityFunctions::lookAt(glm::vec3 cameraPosition,glm::vec3 centreOfScene, glm::mat3 cameraOrientation) {
+
+	glm::vec3 forwardVector = centreOfScene - cameraPosition;
+		// centre (0,0,0) , camera (0,0,4) , direction (0,0,-4)
+	forwardVector = glm::normalize(forwardVector);
+	glm::vec3 vertical(0.0,1.0,0.0);
+	glm::vec3 rightVector =  glm::cross(vertical,forwardVector);
+	glm::vec3 upVector = glm::cross(forwardVector,rightVector);
+
+
+	cameraOrientation = glm::mat3(rightVector, upVector, forwardVector);
+	return cameraOrientation;
+}
+
+bool utilityFunctions::triangleOffScreen(CanvasPoint p1, CanvasPoint p2, CanvasPoint p3) {
+	bool triangleOffScreen = false;
+	if (p1.x < 0 && p2.x < 0 && p3.x < 0) triangleOffScreen = true;
+	if (p1.x > WIDTH && p2.x >WIDTH && p3.x >WIDTH) triangleOffScreen = true;
+	if (p1.y < 0 && p2.y < 0 && p3.y < 0) triangleOffScreen = true;
+	if (p1.y >HEIGHT && p2.y >HEIGHT&& p3.y >HEIGHT) triangleOffScreen = true;
+	return triangleOffScreen;
+}
+
 std::vector<float> utilityFunctions::clearDepthBuffer(std::vector<float> depthBuffer) {
 	for (float & i : depthBuffer) {
 		i = 0.0;
