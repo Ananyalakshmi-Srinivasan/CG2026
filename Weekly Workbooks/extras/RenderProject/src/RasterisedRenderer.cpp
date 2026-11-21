@@ -36,6 +36,12 @@ void RasterisedRenderer::draw(DrawingWindow &window) {
 			triangleVertices.push_back(point);
 			//pointCloud.push_back(point);
 		}
+
+		CanvasPoint v0 = triangleVertices[0];
+		CanvasPoint v1 = triangleVertices[1];
+		CanvasPoint v2 = triangleVertices[2];
+
+		if (utilityFunctions::triangleOffScreen(v0,v1,v2)) continue;
 		CanvasTriangle canvasTriangle = CanvasTriangle(triangleVertices[0], triangleVertices[1], triangleVertices[2]);
 		wireFrame.push_back(canvasTriangle);
 		triangleColours.push_back(modelTriangle.colour);
