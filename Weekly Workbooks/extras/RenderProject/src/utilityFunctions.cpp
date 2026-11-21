@@ -212,6 +212,16 @@ glm::mat3 utilityFunctions::rolledMatrix(float cos, float sin, glm::mat3 cameraO
 	glm::vec3 col2(-sin, cos, 0.0);
 	glm::vec3 col3(0.0, 0.0, 1.0);
 	glm::mat3 rotationMatrix = glm::mat3(col1, col2, col3);
+	return rotationMatrix;
+}
+
+glm::mat3 utilityFunctions::tiltMatrix(float cos, float sin) {
+	glm::vec3 col1(1.0, 0.0, 0.0);
+	glm::vec3 col2(0.0, cos, sin);
+	glm::vec3 col3(0.0, -sin, cos);
+	glm::mat3 rotationMatrix = glm::mat3(col1, col2, col3);
+	return rotationMatrix;
+}
 
 	glm::mat3 newCameraOrientation = rotationMatrix*cameraOrientation;
 	return newCameraOrientation;
