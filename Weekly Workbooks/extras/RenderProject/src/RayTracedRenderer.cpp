@@ -96,7 +96,7 @@ Colour RayTracedRenderer::castHardShadows(glm::vec3 lightPosition, RayTriangleIn
 	if (lightIntersection.distanceFromCamera != -1.0) {
 		if ((lightIntersection.distanceFromCamera < glm::length(lightRayDirection))) {
 			if (intersection.triangleIndex != lightIntersection.triangleIndex) {
-				// this removes shadow acne around light box // --> ask if theres any other way...this is way too pedantic. 
+				// this removes shadow acne around light box // --> ask if theres any other way...this is way too pedantic.
 				uint32_t cyan = utilityFunctions::convertColourToUint32(colourPalette.find("Cyan")->second);
 				if (utilityFunctions::convertColourToUint32(intersection.intersectedTriangle.colour) == cyan) {
 					return intersection.intersectedTriangle.colour;
