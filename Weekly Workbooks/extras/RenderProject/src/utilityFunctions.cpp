@@ -118,7 +118,6 @@ void utilityFunctions::loadModel(std::string objFile, std::string matFile, std::
 	triangles = readObjFile(objFile, triangles, scaleFactor, colourMap);
 }
 
-
 std::vector<float> utilityFunctions::interpolateSingleFloats(float from, float to, int numberOfValues) {
 
 	float difference = to-from; // find the difference between start and end/
@@ -165,11 +164,13 @@ glm::vec3 utilityFunctions::translateCameraPosition(glm::vec3 cameraPosition, gl
 // get's cos theta between camera and a scene vector.
 float utilityFunctions::getCosAngle(glm::vec3 cameraPosition, glm::vec3 sceneVector) {
     float dot = glm::dot(cameraPosition, sceneVector);
+	std::cout << "dot = " << dot << std::endl;
 	float magCamera = length(cameraPosition);
 	float magScene = length(sceneVector);
 
 
 	float angle = dot/(magCamera*magScene);
+	std::cout << "angle = " << angle << std::endl;
 	return angle;
 }
 
@@ -187,48 +188,39 @@ float utilityFunctions::getSinAngle(glm::vec3 cameraPosition, glm::vec3 sceneVec
 	return angle;
 }
 
-glm::mat3 utilityFunctions::tiltedMatrix(float cos, float sin, glm::mat3 cameraOrientation) {
-	glm::vec3 col1(1.0, 0.0, 0.0);
-	glm::vec3 col2(0.0, cos, sin);
-	glm::vec3 col3(0.0, -sin, cos);
-	glm::mat3 rotationMatrix = glm::mat3(col1, col2, col3);
-
-	glm::mat3 newCameraOrientation = rotationMatrix*cameraOrientation;
-	return newCameraOrientation;
-}
-
-glm::mat3 utilityFunctions::pannedMatrix(float cos, float sin, glm::mat3 cameraOrientation) {
-	glm::vec3 col1(cos, 0.0, -sin);
+glm::mat3 utilityFunctions::panMatrix(float angle) {
+	glm::vec3 col1(cos(angle), 0.0, -sin(angle));
 	glm::vec3 col2(0.0, 1.0, 0.0);
-	glm::vec3 col3(sin, 0.0, cos);
+	glm::vec3 col3(sin(angle), 0.0, cos(angle));
 	glm::mat3 rotationMatrix = glm::mat3(col1, col2, col3);
-
-	glm::mat3 newCameraOrientation = rotationMatrix*cameraOrientation;
-	return newCameraOrientation;
+	return rotationMatrix;
 }
 
-glm::mat3 utilityFunctions::rolledMatrix(float cos, float sin, glm::mat3 cameraOrientation) {
-	glm::vec3 col1(cos, sin, 0.0);
-	glm::vec3 col2(-sin, cos, 0.0);
+glm::mat3 utilityFunctions::rollMatrix(float angle) {
+	glm::vec3 col1(cos(angle), sin(angle), 0.0);
+	glm::vec3 col2(-sin(angle), cos(angle), 0.0);
 	glm::vec3 col3(0.0, 0.0, 1.0);
 	glm::mat3 rotationMatrix = glm::mat3(col1, col2, col3);
 	return rotationMatrix;
 }
 
-glm::mat3 utilityFunctions::tiltMatrix(float cos, float sin) {
+glm::mat3 utilityFunctions::tiltMatrix(float angle) {
 	glm::vec3 col1(1.0, 0.0, 0.0);
-	glm::vec3 col2(0.0, cos, sin);
-	glm::vec3 col3(0.0, -sin, cos);
+	glm::vec3 col2(0.0, cos(angle), sin(angle));
+	glm::vec3 col3(0.0, -sin(angle), cos(angle));
 	glm::mat3 rotationMatrix = glm::mat3(col1, col2, col3);
 	return rotationMatrix;
 }
 
+glm::mat3 utilityFunctions::rotateOrientation(glm::mat3 rotationMatrix, glm::mat3 cameraOrientation) {
 	glm::mat3 newCameraOrientation = rotationMatrix*cameraOrientation;
 	return newCameraOrientation;
 }
 
-glm::vec3 utilityFunctions::orbit(glm::vec3 cameraPosition, glm::mat3 rotationMatrix){
-	cameraPosition = cameraPosition*rotationMatrix;
+glm::vec3 utilityFunctions::orbit(glm::vec3 cameraPosition, glm::vec3 axisVector ,glm::mat3 rotationMatrix){
+	glm::vec3 cameraRelative = cameraPosition - axisVector;
+	cameraRelative = rotationMatrix*cameraRelative;
+	cameraPosition = cameraRelative+axisVector;
 	return cameraPosition;
 }
 
@@ -259,4 +251,13 @@ std::vector<float> utilityFunctions::clearDepthBuffer(std::vector<float> depthBu
 		i = 0.0;
 	}
 	return depthBuffer;
+}
+
+bool utilityFunctions::activateOrbit(bool orbitBool) {
+	orbitBool = !orbitBool;
+	return orbitBool;
+}
+bool utilityFunctions::activateLookAt(bool lookAtBool) {
+	lookAtBool =  !lookAtBool;
+	return lookAtBool;
 }

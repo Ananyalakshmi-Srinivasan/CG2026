@@ -3,6 +3,7 @@
 #include <CanvasPoint.h>
 #include <Colour.h>
 #include <map>
+#include<numbers>
 
 #include <cmath>
 #include <vector>
@@ -19,9 +20,18 @@
 
 //comment  for new pR 
 
-
 void RasterisedRenderer::draw(DrawingWindow &window) {
 	window.clearPixels(); //--> this empties the screen.
+	glm::mat3 rotationMatrix = utilityFunctions::panMatrix(0.01);
+	if (orbit == true) {
+		lookAt = true;
+		glm::vec3 centreOfScene(0.0,0.0,0.0);
+		cameraPosition = utilityFunctions::orbit(cameraPosition, centreOfScene,rotationMatrix);
+		if (lookAt == true) {
+			cameraOrientation = utilityFunctions::lookAt(cameraPosition,centreOfScene,cameraOrientation);
+		}
+	}
+
 	// Core 3D rendering data structures (for when we eventually get around to working in 3D ;o)
 	zDepthBuffer=utilityFunctions::clearDepthBuffer(zDepthBuffer);
 
@@ -32,11 +42,12 @@ void RasterisedRenderer::draw(DrawingWindow &window) {
 	for (auto&&modelTriangle : triangles) {
 		std::vector<CanvasPoint> triangleVertices;
 		for (auto&&vertex : modelTriangle.vertices) {
-			CanvasPoint point = projectVertexOntoCanvasPoint(cameraPosition, focalLength,vertex,window);
+			CanvasPoint point = projectVertexOntoCanvasPoint(cameraPosition,cameraOrientation,focalLength,vertex,window);
 			triangleVertices.push_back(point);
 			//pointCloud.push_back(point);
 		}
 
+		// checks if triangle is on screen.
 		CanvasPoint v0 = triangleVertices[0];
 		CanvasPoint v1 = triangleVertices[1];
 		CanvasPoint v2 = triangleVertices[2];
@@ -49,12 +60,13 @@ void RasterisedRenderer::draw(DrawingWindow &window) {
 
 	// uint32_t colour = (255 << 24) + (0 << 16) + (255 << 8) + 0; // UNSIGNED INTEGER (THEREFORE, NEGATIVE INTEGER)
 	int triangleColourIndex = 0;
+
 	for (auto&&triangle : wireFrame) {
-		drawFilledTriangles(triangle, window, triangleColours[triangleColourIndex], zDepthBuffer);
+		if (drawWireframe) { drawStrokedTriangles(triangle, window, Colour(255,255,255), zDepthBuffer); } // if 1 draws wireframe
+		else { drawFilledTriangles(triangle, window, triangleColours[triangleColourIndex], zDepthBuffer);} // if 2 draws filled.
 		triangleColourIndex++;
 	}
 }
-
 
 void RasterisedRenderer::incrementTriangleInd(int increment) {
 	triangleInd += increment;
@@ -63,28 +75,41 @@ void RasterisedRenderer::resetTriangleInd() {
 	triangleInd = 0;
 }
 
-CanvasPoint RasterisedRenderer::projectVertexOntoCanvasPoint(glm::vec3 cameraPosition, float focalLength, glm::vec3 vertexPosition, DrawingWindow &window) {
+void RasterisedRenderer::setDrawWireframe(bool isItWireframe) {
+	drawWireframe = isItWireframe;
+}
+
+CanvasPoint RasterisedRenderer::projectVertexOntoCanvasPoint(glm::vec3 cameraPosition, glm::mat3 cameraOrientation, float focalLength, glm::vec3 vertexPosition, DrawingWindow &window) {
+
+	CanvasPoint twoDPoint;
+
+	 // set twoDPoint to out of bound value for just orbit because when
+	 // orbiting: if z is between these values  model not in frame and u and v become massive.
+	  if (!lookAt && cameraPosition.z>0.0 && cameraPosition.z<1.0) {
+	  	return CanvasPoint(-1,-1);}
+	  if (!lookAt && cameraPosition.z<0.0) {
+	  	return CanvasPoint(-1,-1);
+	  }
 
 	// convert from model coordinate system to camera coordinate system. --> camera is origin.
-	// model. verticies  relative to the centre of the room
-
+	// model vertices relative to the centre of the room
 	float imagePlaneScaling = 160.0;
+	glm::vec3 posRelativeToCamera =  vertexPosition - cameraPosition;
+	glm::vec3 adjustedVector = posRelativeToCamera * cameraOrientation;
+	float inverseZ = adjustedVector.z;
 
-	glm::vec3 posRelativeToCamera = vertexPosition - cameraPosition;
-	float inverseZ = posRelativeToCamera.z;
-
-	// subtract from window.width for u to shift right. -->
 	// points with negative coordinates are meant to be projected onto the right of the plane.
 	// because 0,0 starts in middle of model when it attempts to project right side adjusted to camera it gets skewed weird?
 	// they are plotted outside the image plane --> so subtract from window width
 	//positive points are supposted to be on the left of image plane. negative on the right.
 
-	float u = window.width/2 -(focalLength * (posRelativeToCamera.x / posRelativeToCamera.z))*imagePlaneScaling ;
-	float v = (focalLength * (posRelativeToCamera.y/ posRelativeToCamera.z))*imagePlaneScaling +window.height/2;
+	float u = window.width/2 + (focalLength * (adjustedVector.x / adjustedVector.z))*imagePlaneScaling;
+	float v = window.height/2 - (focalLength * (adjustedVector.y/ adjustedVector.z))*imagePlaneScaling;
 
-	CanvasPoint twoDPoint = CanvasPoint(round(u),round(v));
+	twoDPoint = CanvasPoint(round(u),round(v));
 	if (inverseZ < 0.0) twoDPoint.depth = abs(1.0f/inverseZ) ;
 	else {twoDPoint.depth = 1.0f/inverseZ;}
+
 
 	return twoDPoint;
 }
@@ -100,9 +125,11 @@ void RasterisedRenderer::lineDrawing(CanvasPoint from, CanvasPoint to, DrawingWi
 
 	float numberOfSteps = fmax(abs(xDiff), abs(yDiff));
 
-	if (std::isinf(numberOfSteps)) std::cout << "is infinite" << std::endl;
+	// number of steps can be massive if xdiff and ydiff are massive because when projecting the smaller ur z is the bigger ur u and v are (x and y)
+	// therefore, small z , means massively farway point/step size means AHHH BUFFER
+	//what would a suitable step size be??? infinite is not.
 
-	if (numberOfSteps>0 && !std::isinf(numberOfSteps)) {// stops drawing if number of steps is infinite
+	if (numberOfSteps>0 && numberOfSteps < 5000.0f) {// stops drawing if number of steps is infinite
 		// always using the bigger number of steps ensures we don't skip pixels --> how does that ensure this?
 		float xStepSize = xDiff / numberOfSteps;
 		// work out step size of x or y by dividing total distance by number of steps take
@@ -110,8 +137,6 @@ void RasterisedRenderer::lineDrawing(CanvasPoint from, CanvasPoint to, DrawingWi
 		float yStepSize = yDiff / numberOfSteps;
 
 		float depStepSize = depthDiff / numberOfSteps;
-
-		std::vector<float> zDepths = utilityFunctions::interpolateSingleFloats(from.depth, to.depth, numberOfSteps);
 
 		for (int i=0; i <= numberOfSteps; i++) {
 			float x = from.x + (xStepSize * i);
@@ -138,7 +163,6 @@ void RasterisedRenderer::lineDrawing(CanvasPoint from, CanvasPoint to, DrawingWi
 }
 
 void RasterisedRenderer::drawStrokes(CanvasPoint from, CanvasPoint to, DrawingWindow &window, Colour colourOfLine) {
-
 	int xDiff = to.x - from.x;
 	int yDiff = to.y - from.y;
 
@@ -153,20 +177,22 @@ void RasterisedRenderer::drawStrokes(CanvasPoint from, CanvasPoint to, DrawingWi
 	float yStepSize = yDiff / numberOfSteps;
 
 
-	for (int i=0; i <= numberOfSteps; i++) {
-		float x = from.x + (xStepSize * i);
-		float y = from.y + (yStepSize * i);
+	if (numberOfSteps>0) {
+		for (int i=0; i <= numberOfSteps; i++) {
+			float x = from.x + (xStepSize * i);
+			float y = from.y + (yStepSize * i);
 
-		if (x>0 && y> 0 && x < window.width && y < window.height) { // restrict the drawing space//
+			if (x>0 && y> 0 && x < window.width && y < window.height) { // restrict the drawing space//
 				window.setPixelColour(floor(x), floor(y), colour ); // can't have 1.5 pixel therefore need to round the x and y.
 			}
 		}
 	}
+}
 
-void RasterisedRenderer::drawStrokedTriangles(CanvasTriangle triangle, DrawingWindow &window, Colour colour) {
-	drawStrokes(triangle.vertices[0], triangle.vertices[1], window, colour);
-	drawStrokes(triangle.vertices[0], triangle.vertices[2], window, colour);
-	drawStrokes(triangle.vertices[1], triangle.vertices[2], window, colour);
+void RasterisedRenderer::drawStrokedTriangles(CanvasTriangle triangle, DrawingWindow &window, Colour colour, std::vector<float> &zDepthBuffer) {
+	lineDrawing(triangle.vertices[0], triangle.vertices[1], window, colour, zDepthBuffer);
+	lineDrawing(triangle.vertices[0], triangle.vertices[2], window, colour, zDepthBuffer);
+	lineDrawing(triangle.vertices[1], triangle.vertices[2], window, colour,zDepthBuffer);
 }
 
 std::vector<CanvasPoint> RasterisedRenderer::sortCoordsByY(std::vector<CanvasPoint>  unsortedVertices) {
@@ -211,7 +237,6 @@ float RasterisedRenderer::calculateZGradient(CanvasPoint p1, CanvasPoint p2) {
 
 	return gradient;
 }
-
 
 std::vector<CanvasPoint> RasterisedRenderer::obtainPoints(CanvasPoint firstPoint, CanvasPoint secondPoint, int pointCount) {
 
@@ -301,6 +326,6 @@ void RasterisedRenderer::drawFilledTriangles(CanvasTriangle triangle, DrawingWin
 	}
 	lineDrawing(triangle.vertices[0], triangle.vertices[1], window, colour, zDepthBuffer);
 	lineDrawing(triangle.vertices[0], triangle.vertices[2], window, colour, zDepthBuffer);
-	lineDrawing(triangle.vertices[1], triangle.vertices[2], window, colour, zDepthBuffer);}
+	lineDrawing(triangle.vertices[1], triangle.vertices[2], window, colour, zDepthBuffer);
+}
 
-	// texture map later. --> just need theory for midterm!!!!!! -_- doing easier way after reading week.
