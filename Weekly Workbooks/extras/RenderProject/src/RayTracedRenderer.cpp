@@ -20,7 +20,16 @@
 class DrawingWindow;
 
 void RayTracedRenderer::draw(DrawingWindow &window) {
-	//window.clearPixels(); //--> this empies the screen.
+	window.clearPixels(); //--> this empties the screen.
+	glm::mat3 rotationMatrix = utilityFunctions::panMatrix(0.01);
+
+	if (orbit == true) {
+		glm::vec3 centreOfScene(0.0,0.0,0.0);
+		cameraPosition = utilityFunctions::orbit(cameraPosition, centreOfScene,rotationMatrix);
+		if (lookAt == true) {
+			utilityFunctions::lookAt(cameraPosition, centreOfScene, cameraOrientation);
+		}
+	}
 
 	for (int x = 0; x < window.width; x++) {
 		for (int y = 0; y < window.height; y++) {
