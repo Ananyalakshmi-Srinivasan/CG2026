@@ -46,10 +46,6 @@ void RayTracedRenderer::draw(DrawingWindow &window) {
 
 				uint32_t intersectColour = utilityFunctions::convertColourToUint32(intersectionColour);
 				window.setPixelColour(x, y, intersectColour);
-				// //std::cout << faintersection.intersectedTriangle.colour << "intersection" << std::endl;
-				// uint32_t colour = utilityFunctions::convertColourToUint32(triangleColour);
-				// window.setPixelColour(x, y, colour);
-				// //std::cout << "bleh" << std::endl;
 			}
 		}
 	}
@@ -98,7 +94,7 @@ Colour RayTracedRenderer::castHardShadows(glm::vec3 lightPosition, RayTriangleIn
 	RayTriangleIntersection lightIntersection = getClosestIntersection(lightRayNormalised, lightPosition);
 
 	if (lightIntersection.distanceFromCamera != -1.0) {
-		if ((lightIntersection.distanceFromCamera <= glm::length(lightRayDirection))) {
+		if ((lightIntersection.distanceFromCamera < glm::length(lightRayDirection))) {
 			if (intersection.triangleIndex != lightIntersection.triangleIndex) {
 				// if the triangle its intersecting is not itself THEN theres a box or alternate surface in the way
 				// then u colour it black.
