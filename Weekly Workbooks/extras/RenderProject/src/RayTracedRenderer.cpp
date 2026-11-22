@@ -52,7 +52,7 @@ void RayTracedRenderer::draw(DrawingWindow &window) {
 glm::vec3 RayTracedRenderer::transposePlaneCoordsToRay(glm::vec3 planePoint) {
 	float x=planePoint.x -WIDTH/2;
 	float y= HEIGHT/2-planePoint.y; //otherwise box is upside down.
-	glm::vec3 rayDirection = glm::vec3(x, y, planePoint.z);
+	glm::vec3 rayDirection = glm::vec3(x, y, -planePoint.z); // inverting  z coordinate to work with forward orientation.
 	glm::vec3 rayNormalised = glm::normalize(rayDirection);
 	//std::cout << rayNormalised.x << " " << rayNormalised.y << std::endl;
 
