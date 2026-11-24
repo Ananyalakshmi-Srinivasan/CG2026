@@ -24,12 +24,12 @@ void RasterisedRenderer::draw(DrawingWindow &window) {
 	window.clearPixels(); //--> this empties the screen.
 	glm::mat3 rotationMatrix = utilityFunctions::panMatrix(0.01);
 	if (orbit == true) {
-		lookAt = true;
+		//lookAt = true;
 		glm::vec3 centreOfScene(0.0,0.0,0.0);
 		cameraPosition = utilityFunctions::orbit(cameraPosition, centreOfScene,rotationMatrix);
-		if (lookAt == true) {
+		//if (lookAt == true) {
 			cameraOrientation = utilityFunctions::lookAt(cameraPosition,centreOfScene,cameraOrientation);
-		}
+		//}
 	}
 
 	// Core 3D rendering data structures (for when we eventually get around to working in 3D ;o)

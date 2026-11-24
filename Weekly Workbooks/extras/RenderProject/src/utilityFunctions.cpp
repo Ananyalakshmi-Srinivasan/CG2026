@@ -102,6 +102,7 @@ std::vector<ModelTriangle> utilityFunctions::readObjFile(std::string filename, s
 		// iterate through all vertices in a face and find in vertex list
 		for (const auto& vertexIndex : face) {
 			modelTriangle.vertices[counter] = verticesList[vertexIndex];
+			modelTriangle.normal = glm::normalize(glm::cross((modelTriangle.vertices[1]-modelTriangle.vertices[0]),modelTriangle.vertices[2]-modelTriangle.vertices[0]));
 			counter++;
 		}
 		modelTriangle.colour = colour;
@@ -253,11 +254,11 @@ std::vector<float> utilityFunctions::clearDepthBuffer(std::vector<float> depthBu
 	return depthBuffer;
 }
 
-bool utilityFunctions::activateOrbit(bool orbitBool) {
-	orbitBool = !orbitBool;
-	return orbitBool;
-}
-bool utilityFunctions::activateLookAt(bool lookAtBool) {
-	lookAtBool =  !lookAtBool;
-	return lookAtBool;
-}
+// bool utilityFunctions::activateOrbit(bool orbitBool) {
+// 	orbitBool = !orbitBool;
+// 	return orbitBool;
+// }
+// bool utilityFunctions::activateLookAt(bool lookAtBool) {
+// 	lookAtBool =  !lookAtBool;
+// 	return lookAtBool;
+// }

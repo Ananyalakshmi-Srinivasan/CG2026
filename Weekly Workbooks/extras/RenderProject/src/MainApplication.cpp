@@ -59,34 +59,44 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 			cameraPosition = utilityFunctions::translateCameraPosition(cameraPosition, translationVector);
 		}
 		else if (event.key.keysym.sym == SDLK_UP) {
-			glm::vec3 translationVector(0.0, 1.0, 0.0);
+			glm::vec3 translationVector(0.0, 0.0, 1.0);
 			cameraPosition = utilityFunctions::translateCameraPosition(cameraPosition, translationVector);
 		}
 		else if (event.key.keysym.sym == SDLK_DOWN) {
-			glm::vec3 translationVector(0.0, -1.0, 0.0);
+			glm::vec3 translationVector(0.0, 0.0, -1.0);
 		    cameraPosition = utilityFunctions::translateCameraPosition(cameraPosition, translationVector);
 		}
 		else if (event.key.keysym.sym == SDLK_o) {
-			rasterisedRenderer.orbit = utilityFunctions::activateOrbit(rasterisedRenderer.orbit);
-			rayTracedRenderer.orbit = utilityFunctions::activateOrbit(rayTracedRenderer.orbit);
-			std::cout << rasterisedRenderer.orbit << rayTracedRenderer.orbit << std::endl;
+			rasterisedRenderer.orbit = !rasterisedRenderer.orbit;
+			rayTracedRenderer.orbit = !rayTracedRenderer.orbit;
 		}
-		else if (event.key.keysym.sym == SDLK_l) {
-			rasterisedRenderer.lookAt = utilityFunctions::activateOrbit(rasterisedRenderer.lookAt);
-			rayTracedRenderer.lookAt = utilityFunctions::activateOrbit(rayTracedRenderer.lookAt);
-			std::cout << rasterisedRenderer.lookAt << rayTracedRenderer.lookAt << std::endl;
-
+		else if (event.key.keysym.sym == SDLK_r) {
+			rayTracedRenderer.lookAt = !rayTracedRenderer.lookAt;
 		}
 		else if (event.key.keysym.sym == SDLK_f) { // allows you to draw one triangle at a time at key press.
-			if (triangleInd < triangles.size()) { // wireframe size not necessarily size of obj. --> address this.
-				rasterisedRenderer.incrementTriangleInd(1);
-			} else { // resets triangle counter to 0.
-				triangleInd = 0;
-				rasterisedRenderer.resetTriangleInd();
-			}
+			// if (triangleInd < triangles.size()) { // wireframe size not necessarily size of obj. --> address this.
+			// 	rasterisedRenderer.incrementTriangleInd(1);
+			// } else { // resets triangle counter to 0.
+			// 	triangleInd = 0;
+			// 	rasterisedRenderer.resetTriangleInd();
+			// }
 		} else if (event.key.keysym.sym == SDLK_h) {
 			rayTracedRenderer.hardShadows = !rayTracedRenderer.hardShadows;
 		}
+		else if (event.key.keysym.sym == SDLK_w) {
+			lightPosition += glm::vec3(0.0, 0.1, 0.0);
+		} else if (event.key.keysym.sym == SDLK_a) {
+			lightPosition += glm::vec3(-0.1, 0.0, 0.0);
+		} else if (event.key.keysym.sym == SDLK_s) {
+			lightPosition += glm::vec3(0.0, -0.1, 0.0);
+		} else if (event.key.keysym.sym == SDLK_d) {
+			lightPosition += glm::vec3(0.1, 0.0, 0.0);
+		} else if (event.key.keysym.sym == SDLK_b) {
+			lightPosition += glm::vec3(0.0, 0.0, -0.1);
+		}else if (event.key.keysym.sym == SDLK_z) {
+			lightPosition += glm::vec3(0.0, 0.0, 0.1);
+		}
+
 		else if (event.key.keysym.sym == SDLK_1) {
 			currentRenderer = &rasterisedRenderer; // switches renderer to rasterised.
 			rasterisedRenderer.setDrawWireframe(true); // sets draw wureframe boolean to true.

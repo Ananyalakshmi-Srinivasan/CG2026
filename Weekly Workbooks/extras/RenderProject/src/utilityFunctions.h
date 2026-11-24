@@ -34,8 +34,8 @@ class utilityFunctions {
       static glm::mat3 lookAt(glm::vec3 cameraPosition ,glm::vec3 centreOfScene, glm::mat3 cameraOrientation);
       static bool triangleOffScreen(CanvasPoint p1, CanvasPoint p2, CanvasPoint p3);
 
-      static bool activateOrbit(bool orbit);
-      static bool activateLookAt(bool lookAt);
+      // static bool activateOrbit(bool orbit);
+      // static bool activateLookAt(bool lookAt);
       const double PI = 3.141592653589793;
 
 };
