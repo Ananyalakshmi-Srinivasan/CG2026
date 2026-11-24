@@ -40,8 +40,9 @@ void RayTracedRenderer::draw(DrawingWindow &window) {
 				if (hardShadows) intersectionColour = castHardShadows(lightPosition, intersection);
 				else intersectionColour = intersection.intersectedTriangle.colour;
 
-				float brightness = diffuseLighting(lightPosition, intersection);
-
+				float diffuse = diffuseLighting(lightPosition, intersection);
+				double specular = specularLighting(lightPosition, intersection, rayDirection);
+				float brightness = fmax(diffuse,specular);
 				Colour intensityAdjustedColour = Colour(intersectionColour.red*brightness,
 									intersectionColour.green*brightness,
 									intersectionColour.blue*brightness);
