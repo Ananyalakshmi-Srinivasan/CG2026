@@ -50,6 +50,48 @@ void RayTracedRenderer::draw(DrawingWindow &window) {
 		}
 	}
 }
+float RayTracedRenderer::getPointBrightness(glm::vec3 lightPosition, RayTriangleIntersection intersection) {
+	float distanceFromLight = glm::length(lightPosition-intersection.intersectionPoint); // this is r.
+	float maxIntensity = 7.0; //varies the strength of the light... can change how much of the room you can see with this.
+    float brightness = maxIntensity/(4*PI*distanceFromLight*distanceFromLight); // 1/4pi because max intensity/brightness is 1.
+	if (brightness > 1.0) { return 1.0; }
+		// for brightness values which are very big --> happens when distance is small.
+		// 1.0 is the maximum we use for brightness it means we want 100% of our colour!
+		// clamping necessary for points close to the ceiling to prevent ripple effect(i.e. ceilings parts near point light)
+	return brightness;
+}
+
+float RayTracedRenderer::getAngleOfIncidence(glm::vec3 lightPosition, RayTriangleIntersection intersection) {
+    glm::vec3 vectorToLight = glm::normalize(-(lightPosition-intersection.intersectionPoint));
+	float angle = glm::dot(intersection.intersectedTriangle.normal, vectorToLight);
+	// angle is 1.0 if normal and vector to light are parallel
+	// 0.0 if normal and vector to light are perpendictular.
+	// something in between if the angle is in between.
+	// less than zero if normal points away.
+	return angle;
+}
+
+float RayTracedRenderer::diffuseLighting(glm::vec3 lightPosition, RayTriangleIntersection intersection) {
+	float brightness = getPointBrightness(lightPosition, intersection);
+	float angle = getAngleOfIncidence(lightPosition, intersection);
+	if (angle >0 ) brightness *= angle;
+	return brightness;
+}
+
+
+// float RayTracedRenderer::getPointBrightness(glm::vec3 lightPosition, RayTriangleIntersection intersection) {
+// 	float distanceFromLight = glm::length(lightPosition-intersection.intersectionPoint); // this is r.
+// 	float intensity = 1/(4*PI*distanceFromLight*distanceFromLight); // 1/4pi because max intensity/brightness is 1.
+// 	std::cout << intensity << std::endl;
+// 	return intensity;
+// } // dividing this brightness produced a different interesting light effect.
+
+// float RayTracedRenderer::getPointBrightness(glm::vec3 lightPosition, RayTriangleIntersection intersection) {
+// 	float distanceFromLight = glm::length(intersection.intersectionPoint-lightPosition); // this is r.
+// 	float intensity = 0.25*PI*distanceFromLight*distanceFromLight); // 1/4pi because max intensity/brightness is 1.
+// } does circular prettiness :)
+
+
 
 
 glm::vec3 RayTracedRenderer::transposePlaneCoordsToRay(glm::vec3 planePoint, float scaleFactor) {
