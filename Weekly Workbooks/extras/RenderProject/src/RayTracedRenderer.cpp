@@ -81,6 +81,19 @@ float RayTracedRenderer::diffuseLighting(glm::vec3 lightPosition, RayTriangleInt
 	return brightness;
 }
 
+double RayTracedRenderer::specularLighting(glm::vec3 lightPosition, RayTriangleIntersection intersection ,glm::vec3 viewVector) {
+	glm::vec3 vectorFromLight = glm::normalize(lightPosition-intersection.intersectionPoint);
+	glm::vec3 reflectedRay = glm::reflect(vectorFromLight, intersection.intersectedTriangle.normal);
+    // float dot = glm::dot(vectorFromLight, intersection.intersectedTriangle.normal)*2;
+
+	// glm::vec3 reflectedRay = vectorFromLight - glm::vec3(dot,dot,dot)*intersection.intersectedTriangle.normal;
+	double dotViewandReflection = glm::dot(viewVector, reflectedRay);
+	dotViewandReflection = pow(dotViewandReflection,128);
+	return dotViewandReflection;
+}
+
+
+
 // float RayTracedRenderer::getPointBrightness(glm::vec3 lightPosition, RayTriangleIntersection intersection) {
 // 	float distanceFromLight = glm::length(lightPosition-intersection.intersectionPoint); // this is r.
 // 	float intensity = 1/(4*PI*distanceFromLight*distanceFromLight); // 1/4pi because max intensity/brightness is 1.
