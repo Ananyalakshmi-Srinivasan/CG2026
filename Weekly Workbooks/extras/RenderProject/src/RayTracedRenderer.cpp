@@ -2,6 +2,7 @@
 #include "utilityFunctions.h"
 #include <Colour.h>
 #include <map>
+#include <cmath>
 
 #include <vector>
 
@@ -36,18 +37,18 @@ void RayTracedRenderer::draw(DrawingWindow &window) {
 			RayTriangleIntersection intersection = getClosestIntersection(rayDirection, cameraPosition);
 			if (intersection.distanceFromCamera != -1.0) {
 				Colour intersectionColour;
-
-				if (hardShadows) intersectionColour = castHardShadows(lightPosition, intersection);
-				else intersectionColour = intersection.intersectedTriangle.colour;
-
+				float minBrightness = 0.3;
 				float diffuse = diffuseLighting(lightPosition, intersection);
 				double specular = specularLighting(lightPosition, intersection, rayDirection);
 				float brightness = fmax(diffuse,specular);
-				Colour intensityAdjustedColour = Colour(intersectionColour.red*brightness,
-									intersectionColour.green*brightness,
-									intersectionColour.blue*brightness);
+				brightness = fmax(brightness,minBrightness);
 
-				uint32_t intersectColour = utilityFunctions::convertColourToUint32(intensityAdjustedColour);
+				if (hardShadows) intersectionColour = castHardShadows(lightPosition, intersection, brightness, minBrightness,intersectionColour);
+				else intersectionColour = Colour(intersection.intersectedTriangle.colour.red*brightness,
+					intersection.intersectedTriangle.colour.green*brightness, intersection.intersectedTriangle.colour.blue*brightness);
+
+
+				uint32_t intersectColour = utilityFunctions::convertColourToUint32(intersectionColour);
 				window.setPixelColour(x, y, intersectColour);
 			}
 		}
@@ -55,7 +56,7 @@ void RayTracedRenderer::draw(DrawingWindow &window) {
 }
 float RayTracedRenderer::getPointBrightness(glm::vec3 lightPosition, RayTriangleIntersection intersection) {
 	float distanceFromLight = glm::length(lightPosition-intersection.intersectionPoint); // this is r.
-	float maxIntensity = 7.0; //varies the strength of the light... can change how much of the room you can see with this.
+	float maxIntensity = 16.0; //varies the strength of the light... can change how much of the room you can see with this.
     float brightness = maxIntensity/(4*PI*distanceFromLight*distanceFromLight); // 1/4pi because max intensity/brightness is 1.
 	if (brightness > 1.0) { return 1.0; }
 		// for brightness values which are very big --> happens when distance is small.
@@ -74,13 +75,14 @@ float RayTracedRenderer::getAngleOfIncidence(glm::vec3 lightPosition, RayTriangl
 	return angle;
 }
 
-float RayTracedRenderer::diffuseLighting(glm::vec3 lightPosition, RayTriangleIntersection intersection) {
+float RayTracedRenderer::diffuseLighting( glm::vec3 lightPosition, RayTriangleIntersection intersection) {
 	float brightness = getPointBrightness(lightPosition, intersection);
 	float angle = getAngleOfIncidence(lightPosition, intersection);
 	if (angle >0 ) brightness *= angle;
 	return brightness;
 }
-
+// specular lighting --> wants this to appear at points where the light would be reflected.
+// to combine dot with diffuse
 double RayTracedRenderer::specularLighting(glm::vec3 lightPosition, RayTriangleIntersection intersection ,glm::vec3 viewVector) {
 	glm::vec3 vectorFromLight = glm::normalize(lightPosition-intersection.intersectionPoint);
 	glm::vec3 reflectedRay = glm::reflect(vectorFromLight, intersection.intersectedTriangle.normal);
@@ -91,8 +93,6 @@ double RayTracedRenderer::specularLighting(glm::vec3 lightPosition, RayTriangleI
 	dotViewandReflection = pow(dotViewandReflection,128);
 	return dotViewandReflection;
 }
-
-
 
 // float RayTracedRenderer::getPointBrightness(glm::vec3 lightPosition, RayTriangleIntersection intersection) {
 // 	float distanceFromLight = glm::length(lightPosition-intersection.intersectionPoint); // this is r.
@@ -105,8 +105,6 @@ double RayTracedRenderer::specularLighting(glm::vec3 lightPosition, RayTriangleI
 // 	float distanceFromLight = glm::length(intersection.intersectionPoint-lightPosition); // this is r.
 // 	float intensity = 0.25*PI*distanceFromLight*distanceFromLight); // 1/4pi because max intensity/brightness is 1.
 // } does circular prettiness :)
-
-
 
 
 glm::vec3 RayTracedRenderer::transposePlaneCoordsToRay(glm::vec3 planePoint, float scaleFactor) {
@@ -138,7 +136,7 @@ std::vector<RayTriangleIntersection> RayTracedRenderer::sortPointsByT(std::vecto
 }
 
 // doesn't intersect with white triangle.
-Colour RayTracedRenderer::castHardShadows(glm::vec3 lightPosition, RayTriangleIntersection intersection) {
+Colour RayTracedRenderer::castHardShadows(glm::vec3 lightPosition, RayTriangleIntersection intersection, float brightness, float minBrightness,Colour intensityAdjustedColour) {
 	// hard shadows //
 	glm::vec3 lightRayDirection = (intersection.intersectionPoint-lightPosition);
 	glm::vec3 lightRayNormalised = glm::normalize(lightRayDirection);
@@ -149,16 +147,17 @@ Colour RayTracedRenderer::castHardShadows(glm::vec3 lightPosition, RayTriangleIn
 			if (intersection.triangleIndex != lightIntersection.triangleIndex) {
 				// this removes shadow acne around light box // --> ask if theres any other way...this is way too pedantic.
 				uint32_t cyan = utilityFunctions::convertColourToUint32(colourPalette.find("Cyan")->second);
-				if (utilityFunctions::convertColourToUint32(intersection.intersectedTriangle.colour) == cyan) {
-					return intersection.intersectedTriangle.colour;
+				if (utilityFunctions::convertColourToUint32(intersection.intersectedTriangle.colour) != cyan) {
+					brightness = minBrightness; // if its in shadow force brightness to min.
 				}
-				// if the triangle its intersecting is not itself THEN theres a box or alternate surface in the way
-				// then u colour it black.
-				return {0,0,0};
 			}
 		}
+		intensityAdjustedColour.red = intersection.intersectedTriangle.colour.red*brightness;
+		intensityAdjustedColour.green = intersection.intersectedTriangle.colour.green*brightness;
+		intensityAdjustedColour.blue = intersection.intersectedTriangle.colour.blue*brightness;
+
 	}
-	return intersection.intersectedTriangle.colour; // colour by pixel colour if light can see.
+	return intensityAdjustedColour; // colour by pixel colour if light can see.
 }
 
 // what happens if no intersection?? --> that's why validation.

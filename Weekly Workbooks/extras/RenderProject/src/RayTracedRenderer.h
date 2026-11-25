@@ -28,13 +28,15 @@ class RayTracedRenderer: public Renderer {
 
       void draw(DrawingWindow &window) override;
       RayTriangleIntersection getClosestIntersection(glm::vec3 rayDirection, glm::vec3 cameraPosition);
-      Colour castHardShadows(glm::vec3 lightPosition, RayTriangleIntersection intersection);
+      Colour castHardShadows(glm::vec3 lightPosition, RayTriangleIntersection intersection, float brightness, float minBrightness,Colour intensityAdjustedColour);
       std::vector<RayTriangleIntersection> sortPointsByT(std::vector<RayTriangleIntersection>  unsortedIntersections);
       glm::vec3 transposePlaneCoordsToRay(glm::vec3 planePoint, float scaleFactor );
       //diffuse lighting + support functions
       float diffuseLighting(glm::vec3 lightPosition, RayTriangleIntersection intersection);
       float getPointBrightness(glm::vec3 lightPosition, RayTriangleIntersection intersection);
       float getAngleOfIncidence(glm::vec3 lightPosition, RayTriangleIntersection intersection);
+      // specular lighting
+      double specularLighting(glm::vec3 lightToVector, RayTriangleIntersection intersection ,glm::vec3 viewVector);
 
     // constructor of raytraced renderer
       RayTracedRenderer(glm::vec3 &cameraPosition_, glm::vec3 &lightPosition_, glm::mat3 &cameraOrientation_, float &focalLength_,
