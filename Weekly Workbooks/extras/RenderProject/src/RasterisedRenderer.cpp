@@ -83,7 +83,8 @@ CanvasPoint RasterisedRenderer::projectVertexOntoCanvasPoint(glm::vec3 cameraPos
 
 	CanvasPoint twoDPoint;
 
-	 // set twoDPoint to out of bound value for just orbit because when
+
+	 // set twoDPoint to out of bound value for just orbit because when --> got rid off because o toggle activates orbit and lookAt. 
 	 // orbiting: if z is between these values  model not in frame and u and v become massive.
 	  // if (!lookAt && cameraPosition.z>0.0 && cameraPosition.z<1.0) {
 	  // 	return CanvasPoint(-1,-1);}
