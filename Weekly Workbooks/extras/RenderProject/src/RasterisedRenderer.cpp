@@ -85,11 +85,11 @@ CanvasPoint RasterisedRenderer::projectVertexOntoCanvasPoint(glm::vec3 cameraPos
 
 	 // set twoDPoint to out of bound value for just orbit because when
 	 // orbiting: if z is between these values  model not in frame and u and v become massive.
-	  if (!lookAt && cameraPosition.z>0.0 && cameraPosition.z<1.0) {
-	  	return CanvasPoint(-1,-1);}
-	  if (!lookAt && cameraPosition.z<0.0) {
-	  	return CanvasPoint(-1,-1);
-	  }
+	  // if (!lookAt && cameraPosition.z>0.0 && cameraPosition.z<1.0) {
+	  // 	return CanvasPoint(-1,-1);}
+	  // if (!lookAt && cameraPosition.z<0.0) {
+	  // 	return CanvasPoint(-1,-1);
+	  // }
 
 	// convert from model coordinate system to camera coordinate system. --> camera is origin.
 	// model vertices relative to the centre of the room
