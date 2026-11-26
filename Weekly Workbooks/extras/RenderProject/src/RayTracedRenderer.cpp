@@ -34,10 +34,11 @@ void RayTracedRenderer::draw(DrawingWindow &window) {
 			glm::vec3 rayDirection = transposePlaneCoordsToRay(glm::vec3(x, y, focalLength),160.0);
 
 			// intersection point --> 3d point in world where intersection took place. check if this intersects with light
-			RayTriangleIntersection intersection = getClosestIntersection(rayDirection, cameraPosition);
+			RayTriangleIntersection intersection = getClosestIntersection(rayDirection, cameraPosition, triangles);
+
 			if (intersection.distanceFromCamera != -1.0) {
 				Colour intersectionColour;
-				float minBrightness = 0.3;
+				float minBrightness = 0.2;
 				float diffuse = diffuseLighting(lightPosition, intersection);
 				double specular = specularLighting(lightPosition, intersection, rayDirection);
 				float brightness = fmax(diffuse,specular);
@@ -45,7 +46,7 @@ void RayTracedRenderer::draw(DrawingWindow &window) {
 
 				if (hardShadows) intersectionColour = castHardShadows(lightPosition, intersection, brightness, minBrightness,intersectionColour);
 				else intersectionColour = Colour(intersection.intersectedTriangle.colour.red*brightness,
-					intersection.intersectedTriangle.colour.green*brightness, intersection.intersectedTriangle.colour.blue*brightness);
+						intersection.intersectedTriangle.colour.green*brightness, intersection.intersectedTriangle.colour.blue*brightness);
 
 
 				uint32_t intersectColour = utilityFunctions::convertColourToUint32(intersectionColour);
@@ -54,6 +55,16 @@ void RayTracedRenderer::draw(DrawingWindow &window) {
 		}
 	}
 }
+
+void RayTracedRenderer::phongShading(glm::vec3 lightPosition, RayTriangleIntersection intersection) {
+
+	// get vertex normals --> add face normal to each vertex in OBJ as parsing, then normalise. --> HOW TF TO STOREEEE?
+	//
+
+};
+void RayTracedRenderer::gourardShading(glm::vec3 lightPosition, RayTriangleIntersection intersection) {};
+
+
 float RayTracedRenderer::getPointBrightness(glm::vec3 lightPosition, RayTriangleIntersection intersection) {
 	float distanceFromLight = glm::length(lightPosition-intersection.intersectionPoint); // this is r.
 	float maxIntensity = 16.0; //varies the strength of the light... can change how much of the room you can see with this.
@@ -107,7 +118,17 @@ double RayTracedRenderer::specularLighting(glm::vec3 lightPosition, RayTriangleI
 // } does circular prettiness :)
 
 
+// cornell box obj.
 glm::vec3 RayTracedRenderer::transposePlaneCoordsToRay(glm::vec3 planePoint, float scaleFactor) {
+	float x=planePoint.x -WIDTH/2;
+	float y= HEIGHT/2-planePoint.y; //otherwise box is upside down.
+	glm::vec3 rayDirection = glm::vec3(x, y, planePoint.z*scaleFactor); // inverting  z coordinate to work with forward orientation.
+	glm::vec3 rayNormalised = glm::normalize(rayDirection);
+
+	return cameraOrientation*rayNormalised;
+}
+
+glm::vec3 RayTracedRenderer::transposeSphereCoordsToRay(glm::vec3 planePoint, float scaleFactor) {
 	float x=planePoint.x -WIDTH/2;
 	float y= HEIGHT/2-planePoint.y; //otherwise box is upside down.
 	glm::vec3 rayDirection = glm::vec3(x, y, planePoint.z*scaleFactor); // inverting  z coordinate to work with forward orientation.
@@ -140,7 +161,7 @@ Colour RayTracedRenderer::castHardShadows(glm::vec3 lightPosition, RayTriangleIn
 	// hard shadows //
 	glm::vec3 lightRayDirection = (intersection.intersectionPoint-lightPosition);
 	glm::vec3 lightRayNormalised = glm::normalize(lightRayDirection);
-	RayTriangleIntersection lightIntersection = getClosestIntersection(lightRayNormalised, lightPosition);
+	RayTriangleIntersection lightIntersection = getClosestIntersection(lightRayNormalised, lightPosition, triangles);
 
 	if (lightIntersection.distanceFromCamera != -1.0) {
 		if ((lightIntersection.distanceFromCamera < glm::length(lightRayDirection))) {
@@ -161,7 +182,7 @@ Colour RayTracedRenderer::castHardShadows(glm::vec3 lightPosition, RayTriangleIn
 }
 
 // what happens if no intersection?? --> that's why validation.
-RayTriangleIntersection RayTracedRenderer::getClosestIntersection(glm::vec3 rayDirection, glm::vec3 rayOrigin) { //ray Origin is camera or light
+RayTriangleIntersection RayTracedRenderer::getClosestIntersection(glm::vec3 rayDirection, glm::vec3 rayOrigin, std::vector<ModelTriangle> triangles) { //ray Origin is camera or light
 	std::vector<RayTriangleIntersection> intersections;
 	RayTriangleIntersection closestIntersection = RayTriangleIntersection(rayOrigin, -1.0, triangles[0],-1);
 
