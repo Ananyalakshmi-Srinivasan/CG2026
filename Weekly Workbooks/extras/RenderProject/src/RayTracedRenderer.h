@@ -21,8 +21,6 @@ class RayTracedRenderer: public Renderer {
       int cornellBoxEnd;
       int sphereEnd;
 
-      std::vector<utilityFunctions::VertexNormal> vertexNormals;
-
       const double PI = 2*acos(0.0);
 
       bool orbit;
@@ -40,12 +38,12 @@ class RayTracedRenderer: public Renderer {
       //diffuse lighting + support functions
       float diffuseLighting(glm::vec3 lightPosition, RayTriangleIntersection intersection);
       float getPointBrightness(glm::vec3 lightPosition, RayTriangleIntersection intersection);
-      float getAngleOfIncidence(glm::vec3 lightPosition, RayTriangleIntersection intersection);
+      float getAngleOfIncidence(glm::vec3 lightPosition, RayTriangleIntersection intersection, glm::vec3 normal);
       // specular lighting
       double specularLighting(glm::vec3 lightToVector, RayTriangleIntersection intersection ,glm::vec3 viewVector);
 
       void phongShading(glm::vec3 lightPosition, RayTriangleIntersection intersection);
-      void gourardShading(glm::vec3 lightPosition, RayTriangleIntersection intersection);
+      glm::vec3 gourardShading(glm::vec3 lightPosition, RayTriangleIntersection intersection);
 
     // constructor of raytraced renderer
       RayTracedRenderer(glm::vec3 &cameraPosition_, glm::vec3 &lightPosition_, glm::mat3 &cameraOrientation_, float &focalLength_,

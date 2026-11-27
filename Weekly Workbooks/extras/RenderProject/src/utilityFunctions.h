@@ -29,6 +29,8 @@ class utilityFunctions {
       static glm::mat3 tiltMatrix(float angle);
       static glm::mat3 rollMatrix(float angle);
 
+      static std::vector<glm::vec3> normaliseNormals(std::array<glm::vec3, 3> normals);
+
       static glm::mat3 rotateOrientation(glm::mat3 rotationMatrix, glm::mat3 cameraOrientation);
       static glm::vec3 orbit(glm::vec3 cameraPosition, glm::vec3 axisVector ,glm::mat3 rotationMatrix);
       static glm::mat3 lookAt(glm::vec3 cameraPosition ,glm::vec3 centreOfScene, glm::mat3 cameraOrientation);

@@ -2,13 +2,10 @@
 #include "utilityFunctions.h"
 #include <Colour.h>
 #include <map>
-#include <cmath>
-
 #include <vector>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/io.hpp>
-#include "../libs/sdw/CanvasTriangle.h"
 
 #include "../libs/sdw/DrawingWindow.h"
 #include "../libs/sdw/ModelTriangle.h"
@@ -41,13 +38,13 @@ void RayTracedRenderer::draw(DrawingWindow &window) {
 				float minBrightness = 0.2;
 				float diffuse = diffuseLighting(lightPosition, intersection);
 				double specular = specularLighting(lightPosition, intersection, rayDirection);
-				float brightness = fmax(diffuse,specular);
-				brightness = fmax(brightness,minBrightness);
+				float brightnessFloat = fmax(diffuse,specular);
+				brightnessFloat = fmax(brightnessFloat,minBrightness);
+				glm::vec3 brightness = gourardShading(lightPosition, intersection);
 
-				if (hardShadows) intersectionColour = castHardShadows(lightPosition, intersection, brightness, minBrightness,intersectionColour);
-				else intersectionColour = Colour(intersection.intersectedTriangle.colour.red*brightness,
-						intersection.intersectedTriangle.colour.green*brightness, intersection.intersectedTriangle.colour.blue*brightness);
-
+				if (hardShadows) intersectionColour = castHardShadows(lightPosition, intersection, brightnessFloat, minBrightness,intersectionColour);
+				else intersectionColour = Colour(intersection.intersectedTriangle.colour.red*brightness.x,
+						intersection.intersectedTriangle.colour.green*brightness.y, intersection.intersectedTriangle.colour.blue*brightness.z);
 
 				uint32_t intersectColour = utilityFunctions::convertColourToUint32(intersectionColour);
 				window.setPixelColour(x, y, intersectColour);
@@ -56,13 +53,33 @@ void RayTracedRenderer::draw(DrawingWindow &window) {
 	}
 }
 
+
 void RayTracedRenderer::phongShading(glm::vec3 lightPosition, RayTriangleIntersection intersection) {
+	std::vector<glm::vec3> vertexNormals = utilityFunctions::normaliseNormals(intersection.intersectedTriangle.vertexNormals);
 
-	// get vertex normals --> add face normal to each vertex in OBJ as parsing, then normalise. --> HOW TF TO STOREEEE?
-	//
+   glm::vec3 barycentricNormal = (vertexNormals[0]*intersection.w, vertexNormals[1]*intersection.u, vertexNormals[2]*intersection.v);
 
-};
-void RayTracedRenderer::gourardShading(glm::vec3 lightPosition, RayTriangleIntersection intersection) {};
+
+
+}
+
+glm::vec3 RayTracedRenderer::gourardShading(glm::vec3 lightPosition, RayTriangleIntersection intersection) {
+	std::vector<glm::vec3> vertexNormals = utilityFunctions::normaliseNormals(intersection.intersectedTriangle.vertexNormals);
+
+
+	std::vector<float> vertexIllumination;
+	for (int i = 0; i < vertexNormals.size(); i++ ) {
+		float angle = diffuseLighting(lightPosition, intersection);
+		vertexIllumination.push_back(angle);
+	}
+	// in barycentric coordinates the area opposite the point tells us what point to multiply which weight by.
+
+	//std::cout << vertexIllumination[0] <<vertexIllumination[1]<<vertexIllumination[2] << std::endl;
+
+	glm::vec3 barycentricIllumination = glm::vec3(vertexIllumination[0]*intersection.w ,vertexIllumination[1]*intersection.u ,vertexIllumination[2]*intersection.v);
+	barycentricIllumination = glm::normalize(barycentricIllumination);
+	return barycentricIllumination;
+}
 
 
 float RayTracedRenderer::getPointBrightness(glm::vec3 lightPosition, RayTriangleIntersection intersection) {
@@ -76,11 +93,11 @@ float RayTracedRenderer::getPointBrightness(glm::vec3 lightPosition, RayTriangle
 	return brightness;
 }
 
-float RayTracedRenderer::getAngleOfIncidence(glm::vec3 lightPosition, RayTriangleIntersection intersection) {
+float RayTracedRenderer::getAngleOfIncidence(glm::vec3 lightPosition, RayTriangleIntersection intersection, glm::vec3 normal) {
     glm::vec3 vectorToLight = glm::normalize(-(lightPosition-intersection.intersectionPoint));
-	float angle = glm::dot(intersection.intersectedTriangle.normal, vectorToLight);
+	float angle = glm::dot(normal, vectorToLight);
 	// angle is 1.0 if normal and vector to light are parallel
-	// 0.0 if normal and vector to light are perpendictular.
+	// 0.0 if normal and vector to light are perpendicular.
 	// something in between if the angle is in between.
 	// less than zero if normal points away.
 	return angle;
@@ -88,7 +105,7 @@ float RayTracedRenderer::getAngleOfIncidence(glm::vec3 lightPosition, RayTriangl
 
 float RayTracedRenderer::diffuseLighting( glm::vec3 lightPosition, RayTriangleIntersection intersection) {
 	float brightness = getPointBrightness(lightPosition, intersection);
-	float angle = getAngleOfIncidence(lightPosition, intersection);
+	float angle = getAngleOfIncidence(lightPosition, intersection, intersection.intersectedTriangle.normal);
 	if (angle >0 ) brightness *= angle;
 	return brightness;
 }
@@ -129,8 +146,8 @@ glm::vec3 RayTracedRenderer::transposePlaneCoordsToRay(glm::vec3 planePoint, flo
 }
 
 glm::vec3 RayTracedRenderer::transposeSphereCoordsToRay(glm::vec3 planePoint, float scaleFactor) {
-	float x=planePoint.x -WIDTH/2;
-	float y= HEIGHT/2-planePoint.y; //otherwise box is upside down.
+	float x=planePoint.x- WIDTH/2;
+	float y=HEIGHT-planePoint.y; //otherwise box is upside down.
 	glm::vec3 rayDirection = glm::vec3(x, y, planePoint.z*scaleFactor); // inverting  z coordinate to work with forward orientation.
 	glm::vec3 rayNormalised = glm::normalize(rayDirection);
 
@@ -184,14 +201,14 @@ Colour RayTracedRenderer::castHardShadows(glm::vec3 lightPosition, RayTriangleIn
 // what happens if no intersection?? --> that's why validation.
 RayTriangleIntersection RayTracedRenderer::getClosestIntersection(glm::vec3 rayDirection, glm::vec3 rayOrigin, std::vector<ModelTriangle> triangles) { //ray Origin is camera or light
 	std::vector<RayTriangleIntersection> intersections;
-	RayTriangleIntersection closestIntersection = RayTriangleIntersection(rayOrigin, -1.0, triangles[0],-1);
+	RayTriangleIntersection closestIntersection = RayTriangleIntersection(rayOrigin, -1.0, triangles[0],-1, 0, 0, 1);
 
 	size_t triangleInd = 0;
 	for (auto&&triangle : triangles) {
 
 		glm::vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
 		glm::vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
-		glm::vec3 SPVector = (rayOrigin - triangle.vertices[0]) ;
+		glm::vec3 SPVector = (rayOrigin - triangle.vertices[0]);
 		glm::mat3 DEMatrix(-rayDirection, e0, e1);
 		glm::vec3 possibleSolution = glm::inverse(DEMatrix) * SPVector;
 
@@ -200,6 +217,8 @@ RayTriangleIntersection RayTracedRenderer::getClosestIntersection(glm::vec3 rayD
 		float t = possibleSolution.x;
 		float u = possibleSolution.y;
 		float v = possibleSolution.z;
+		float w = 1 - (u+v);
+
 		// std::cout << t << ", " << u << ", " << v << std::endl;
 
 		// adds intersection to intersection list if u and v are within the triangle
@@ -209,7 +228,8 @@ RayTriangleIntersection RayTracedRenderer::getClosestIntersection(glm::vec3 rayD
 				if (((u+v) <= 1.0) && (t >= 0.0)){
 					glm::vec3 positionVector = (rayOrigin + (t*rayDirection));
 
-					RayTriangleIntersection intersection = RayTriangleIntersection(positionVector, possibleSolution.x, triangle, triangleInd);
+					RayTriangleIntersection intersection = RayTriangleIntersection(positionVector, possibleSolution.x, triangle, triangleInd, u, v, w);
+
 					// collect all intersections and get one with smallest absolute dist.
 					intersections.push_back(intersection);
 				}
@@ -226,3 +246,4 @@ RayTriangleIntersection RayTracedRenderer::getClosestIntersection(glm::vec3 rayD
 
 	return closestIntersection;
 }
+

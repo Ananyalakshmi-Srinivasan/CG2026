@@ -36,6 +36,7 @@ std::map<std::string, Colour> utilityFunctions::readMatFile(std::string filename
 		if (tokens[0] == "newmtl") {
 			// create new colour
 			nameOfColour = tokens[1];
+			std::cout << nameOfColour << std::endl;
 			isLineRGB = true;
 		}
 	}
@@ -57,6 +58,7 @@ std::vector<ModelTriangle> utilityFunctions::readObjFile(std::string filename, s
 		if (tokens[0] == "usemtl") {
 			// set the current colour being processed from the colour table
 			currentColour = colourMap.find(tokens[1])->second;
+			std::cout << currentColour << std::endl;
 		}
 
 		if (currentLine[0] == 'v') {
@@ -94,6 +96,10 @@ std::vector<ModelTriangle> utilityFunctions::readObjFile(std::string filename, s
 			faces.insert({newFace, currentColour});
 		}
 	}
+
+	// int n = verticesList.size();
+	// std::vector<glm::vec3> normalsList(n, glm::vec3(0.0,0.0,0.0));
+
 	// go through all faces and create model triangles based on vertex information -- AFTER reading thru file
 	for (const auto& [face, colour] : faces) {
 
@@ -103,15 +109,25 @@ std::vector<ModelTriangle> utilityFunctions::readObjFile(std::string filename, s
 		for (const auto& vertexIndex : face) {
 			modelTriangle.vertices[counter] = verticesList[vertexIndex];
 			modelTriangle.normal = glm::normalize(glm::cross((modelTriangle.vertices[1]-modelTriangle.vertices[0]),modelTriangle.vertices[2]-modelTriangle.vertices[0]));
+			modelTriangle.vertexNormals[counter] += modelTriangle.normal; // calculated the sum of vertexNormals for each vertex MUST normalise after.
 			counter++;
 		}
 		modelTriangle.colour = colour;
-
 		savedTriangle.push_back(modelTriangle);
 	}
 
-
 	return savedTriangle;
+}
+
+// can't  normalise in obj
+std::vector<glm::vec3> utilityFunctions::normaliseNormals(std::array<glm::vec3, 3> normals) {
+	std::vector<glm::vec3> vertexNormals;
+
+
+	for (auto& vNorm : normals ) {
+		vertexNormals.push_back(glm::normalize(vNorm));
+	}
+	return vertexNormals;
 }
 
 void utilityFunctions::loadModel(std::string objFile, std::string matFile, std::vector<ModelTriangle> &triangles, std::map<std::string,Colour> &colourMap, float scaleFactor) {
@@ -228,7 +244,7 @@ glm::vec3 utilityFunctions::orbit(glm::vec3 cameraPosition, glm::vec3 axisVector
 glm::mat3 utilityFunctions::lookAt(glm::vec3 cameraPosition,glm::vec3 centreOfScene, glm::mat3 cameraOrientation) {
 
 	glm::vec3 forwardVector = centreOfScene - cameraPosition;
-		// centre (0,0,0) , camera (0,0,4) , direction (0,0,-4)
+		// centre (0,0,0) , camera (0,0,4) , forward(direction) (0,0,-4)
 	forwardVector = glm::normalize(forwardVector);
 	glm::vec3 vertical(0.0,1.0,0.0);
 	glm::vec3 rightVector =  glm::cross(forwardVector,vertical); // slides have these the other way
