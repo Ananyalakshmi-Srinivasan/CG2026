@@ -27,8 +27,6 @@ class RasterisedRenderer: public Renderer {
       const double PI = 3.141592653589793;
 
       void draw(DrawingWindow &window) override;
-
-
       void lineDrawing(CanvasPoint from, CanvasPoint to, DrawingWindow &window, Colour colourOfLine, std::vector<float > &zDepthBuffer);
       void drawStrokes(CanvasPoint from, CanvasPoint to, DrawingWindow &window, Colour colourOfLine);
 
