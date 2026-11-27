@@ -124,9 +124,14 @@ int main(int argc, char *argv[]) {
 	// if i run with make file (i.e. terminal) relative path for these  won't lead to a render?
 	std::string matFile = "../src/models/cornellBox/cornell-box.mtl";
 	std::string objFile = "../src/models/cornellBox/cornell-box.obj";
+	std::string sphereObj = "../src/models/sphere.obj";
+	std::string sphereMat = "../src/models/sphere.mtl";
+
+
 	float scaleFactor = 0.35;
 
-	utilityFunctions::loadModel(objFile, matFile, triangles, colourPalette, scaleFactor);
+	//utilityFunctions::loadModel(objFile, matFile, triangles, colourPalette, scaleFactor);
+	utilityFunctions::loadModel(sphereObj, sphereMat, triangles, colourPalette, 0.5);
 
 	// colourPalette = utilityFunctions::readMatFile(matFile, colourPalette);
 	// triangles = utilityFunctions::readObjFile(objFile, triangles, scaleFactor, colourPalette);
